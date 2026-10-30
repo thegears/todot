@@ -1,18 +1,18 @@
-use crate::storage::{self, get_todos};
+use crate::storage::{get_todos_from_file, update_file};
 use color_eyre::eyre::Ok;
+use serde::Serialize;
 use serde_derive::Deserialize;
-use std::time::SystemTime;
 
 use ratatui::widgets::ListState;
 
-#[derive(Debug, PartialEq, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Todo {
     pub content: String,
     pub is_done: bool,
     pub id: usize,
-    pub time: usize,
 }
 
+#[derive(PartialEq)]
 pub enum CurrentScreen {
     Main,
     Adding,
@@ -23,17 +23,19 @@ pub struct App {
     pub todos: Vec<Todo>,
     pub current_screen: CurrentScreen,
     pub state: ListState,
+    pub add_todo_input: String,
     pub should_quit: bool,
 }
 
 impl App {
     pub fn new() -> color_eyre::Result<Self> {
-        let todos = get_todos()?;
+        let todos = get_todos_from_file()?;
 
         Ok(Self {
             todos,
             current_screen: CurrentScreen::Main,
             state: ListState::default().with_selected(Some(0)),
+            add_todo_input: String::new(),
             should_quit: false,
         })
     }
@@ -50,7 +52,22 @@ impl App {
         self.should_quit = true;
     }
 
-    pub fn add_todo(&mut self, content: String) {}
+    pub fn add_todo(&mut self) -> color_eyre::Result<()> {
+        let new_todo_id = match self.todos.last() {
+            Some(last_todo) => last_todo.id + 1,
+            None => 0,
+        };
+
+        self.todos.push(Todo {
+            content: std::mem::take(&mut self.add_todo_input),
+            is_done: false,
+            id: new_todo_id,
+        });
+
+        update_file(&self.todos)?;
+
+        Ok(())
+    }
 
     pub fn remove_todo(&mut self, id: usize) {}
 

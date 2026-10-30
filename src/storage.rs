@@ -1,6 +1,6 @@
 use color_eyre::eyre::OptionExt;
 use dirs;
-use std::fs;
+use std::{fs, path::PathBuf};
 
 use serde_derive::Deserialize;
 
@@ -11,7 +11,7 @@ pub struct AppData {
     todos: Vec<Todo>,
 }
 
-fn read_json_file() -> color_eyre::Result<String> {
+fn get_path() -> color_eyre::Result<PathBuf> {
     let local_dir = dirs::data_local_dir().ok_or_eyre("Error on finding local dir!")?;
     let todot_dir_path = local_dir.join("todot");
     let json_path = todot_dir_path.join("todot.json");
@@ -24,15 +24,23 @@ fn read_json_file() -> color_eyre::Result<String> {
         fs::write(&json_path, r#"{"todos":[]}"#)?;
     }
 
-    let file = fs::read_to_string(json_path)?;
-
-    Ok(file)
+    Ok(json_path)
 }
 
-pub fn get_todos() -> color_eyre::Result<Vec<Todo>> {
-    let json_string = read_json_file()?;
+pub fn get_todos_from_file() -> color_eyre::Result<Vec<Todo>> {
+    let json_path = get_path()?;
+    let json_string = fs::read_to_string(json_path)?;
     let json: AppData = serde_json::from_str(json_string.as_str())?;
     let todos = json.todos;
 
     Ok(todos)
+}
+
+pub fn update_file(todos: &Vec<Todo>) -> color_eyre::Result<()> {
+    let json_path = get_path()?;
+
+    let todos_string = serde_json::to_string_pretty(todos)?;
+
+    fs::write(json_path, format!(r#"{{"todos": {}}}"#, todos_string))?;
+    Ok(())
 }

@@ -1,9 +1,12 @@
 mod app;
 mod storage;
 mod ui;
-use crate::app::{App, CurrentScreen};
+use crate::{
+    app::{App, CurrentScreen},
+    ui::{adding_todo_modal, main_screen},
+};
 
-use color_eyre::eyre::Ok;
+use color_eyre::eyre::{Ok, OptionExt};
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
 
@@ -15,12 +18,12 @@ fn main() -> color_eyre::Result<()> {
     Ok(())
 }
 
-fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> Result<(), color_eyre::eyre::Error> {
+fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> {
     while !app.should_quit {
         terminal.draw(|frame| render(frame, app))?;
         match crossterm::event::read()? {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                handle_key_event(key_event, app)
+                handle_key_event(key_event, app)?
             }
             _ => {}
         };
@@ -29,21 +32,57 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> Result<(), color_eyre::
     Ok(())
 }
 
-fn handle_key_event(key_event: KeyEvent, app: &mut App) {
-    match key_event.code {
-        KeyCode::Down => app.select_next_item(),
-        KeyCode::Up => app.select_previous_item(),
-        KeyCode::Char('q') => app.quit(),
-        _ => {}
+fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()> {
+    match app.current_screen {
+        CurrentScreen::Main => match key_event.code {
+            KeyCode::Down => app.select_next_item(),
+            KeyCode::Up => app.select_previous_item(),
+            KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
+            KeyCode::Char('q') => app.quit(),
+
+            _ => {}
+        },
+
+        CurrentScreen::Adding => match key_event.code {
+            KeyCode::Enter => {
+                if app.add_todo_input.len() > 0 {
+                    app.add_todo();
+                }
+
+                app.current_screen = CurrentScreen::Main;
+            }
+
+            KeyCode::Esc => {
+                app.add_todo_input.clear();
+
+                app.current_screen = CurrentScreen::Main;
+            }
+
+            KeyCode::Backspace => {
+                _ = app.add_todo_input.pop();
+            }
+
+            _ => {
+                if let Some(char) = key_event.code.as_char() {
+                    app.add_todo_input.push(char);
+                }
+            }
+        },
+
+        CurrentScreen::Editing => {}
     }
+
+    Ok(())
 }
 
 fn render(frame: &mut Frame, app: &mut App) {
-    ui::main_screen(frame, app);
+    main_screen(frame, app);
 
     match app.current_screen {
         CurrentScreen::Main => {}
-        CurrentScreen::Adding => {}
+        CurrentScreen::Adding => {
+            adding_todo_modal(frame, app);
+        }
         CurrentScreen::Editing => {}
     }
 }
