@@ -23,10 +23,10 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
         terminal.draw(|frame| render(frame, app))?;
         match crossterm::event::read()? {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                handle_key_event(key_event, app)?
+                handle_key_event(key_event, app)?;
             }
             _ => {}
-        };
+        }
     }
 
     Ok(())
@@ -38,7 +38,7 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
             KeyCode::Down => app.select_next_item(),
             KeyCode::Up => app.select_previous_item(),
             KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
-            KeyCode::Char('t') => app.toggle_done(),
+            KeyCode::Char('t') => app.toggle_done()?,
             KeyCode::Char('d') => app.remove_todo()?,
             KeyCode::Char('q') => app.quit(),
 
@@ -47,7 +47,7 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
 
         CurrentScreen::Adding => match key_event.code {
             KeyCode::Enter => {
-                if app.add_todo_input.len() > 0 {
+                if !app.add_todo_input.is_empty() {
                     app.add_todo()?;
                 }
 

@@ -1,5 +1,4 @@
 use color_eyre::eyre::OptionExt;
-use dirs;
 use std::{fs, path::PathBuf};
 
 use serde_derive::Deserialize;
@@ -41,6 +40,6 @@ pub fn update_file(todos: &Vec<Todo>) -> color_eyre::Result<()> {
 
     let todos_string = serde_json::to_string_pretty(todos)?;
 
-    fs::write(json_path, format!(r#"{{"todos": {}}}"#, todos_string))?;
+    fs::write(json_path, format!(r#"{{"todos": {todos_string}}}"#))?;
     Ok(())
 }
