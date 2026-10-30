@@ -13,7 +13,17 @@ pub struct AppData {
 
 fn read_json_file() -> color_eyre::Result<String> {
     let local_dir = dirs::data_local_dir().ok_or_eyre("Error on finding local dir!")?;
-    let json_path = local_dir.join("todot").join("todot.json");
+    let todot_dir_path = local_dir.join("todot");
+    let json_path = todot_dir_path.join("todot.json");
+
+    if !todot_dir_path.exists() {
+        fs::create_dir_all(todot_dir_path)?;
+    }
+
+    if !json_path.exists() {
+        fs::write(&json_path, r#"{"todos":[]}"#)?;
+    }
+
     let file = fs::read_to_string(json_path)?;
 
     Ok(file)
