@@ -1,12 +1,16 @@
+use crate::storage::{self, get_todos};
+use color_eyre::eyre::Ok;
+use serde_derive::Deserialize;
 use std::time::SystemTime;
 
 use ratatui::widgets::ListState;
 
+#[derive(Debug, PartialEq, Deserialize)]
 pub struct Todo {
     pub content: String,
     pub is_done: bool,
     pub id: usize,
-    pub time: SystemTime,
+    pub time: usize,
 }
 
 pub enum CurrentScreen {
@@ -23,13 +27,15 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        Self {
-            todos: Vec::new(),
+    pub fn new() -> color_eyre::Result<Self> {
+        let todos = get_todos()?;
+
+        Ok(Self {
+            todos,
             current_screen: CurrentScreen::Main,
             state: ListState::default().with_selected(Some(0)),
             should_quit: false,
-        }
+        })
     }
 
     pub fn select_next_item(&mut self) {

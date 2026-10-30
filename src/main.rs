@@ -1,4 +1,5 @@
 mod app;
+mod storage;
 mod ui;
 use crate::app::{App, CurrentScreen};
 
@@ -9,7 +10,7 @@ use ratatui::{DefaultTerminal, Frame};
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
-    let mut app = App::new();
+    let mut app = App::new()?;
     ratatui::run(|terminal| tui(terminal, &mut app))?;
     Ok(())
 }
