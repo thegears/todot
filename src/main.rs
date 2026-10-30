@@ -38,6 +38,7 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
             KeyCode::Down => app.select_next_item(),
             KeyCode::Up => app.select_previous_item(),
             KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
+            KeyCode::Char('t') => app.toggle_done(),
             KeyCode::Char('d') => app.remove_todo()?,
             KeyCode::Char('q') => app.quit(),
 

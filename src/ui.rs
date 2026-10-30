@@ -1,6 +1,7 @@
 use ratatui::{
     Frame,
     layout::Constraint,
+    style::{Color, Style, Styled},
     widgets::{Block, Clear, List, ListItem, Paragraph},
 };
 
@@ -10,7 +11,15 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
     let items: Vec<ListItem> = app
         .todos
         .iter()
-        .map(|todo| ListItem::new(todo.content.as_str()))
+        .map(|todo| {
+            let text_color = if todo.is_done {
+                Color::Green
+            } else {
+                Color::White
+            };
+
+            ListItem::new(todo.content.as_str()).set_style(Style::new().fg(text_color))
+        })
         .collect();
 
     let list = List::new(items).highlight_symbol(">");
