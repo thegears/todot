@@ -1,27 +1,48 @@
 mod app;
-use crate::app::App;
+mod ui;
+use crate::app::{App, CurrentScreen};
 
-use ratatui::{
-    DefaultTerminal, Frame,
-    widgets::{Block, Paragraph},
-};
+use color_eyre::eyre::Ok;
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
+use ratatui::{DefaultTerminal, Frame};
 
 fn main() -> color_eyre::Result<()> {
-    let mut app = App::new();
     color_eyre::install()?;
+
+    let mut app = App::new();
     ratatui::run(|terminal| tui(terminal, &mut app))?;
     Ok(())
 }
 
-fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> std::io::Result<()> {
-    loop {
+fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> Result<(), color_eyre::eyre::Error> {
+    while !app.should_quit {
         terminal.draw(|frame| render(frame, app))?;
-        if crossterm::event::read()?.is_key_press() {
-            break Ok(());
-        }
+        match crossterm::event::read()? {
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
+                handle_key_event(key_event, app)
+            }
+            _ => {}
+        };
+    }
+
+    Ok(())
+}
+
+fn handle_key_event(key_event: KeyEvent, app: &mut App) {
+    match key_event.code {
+        KeyCode::Down => app.select_next_item(),
+        KeyCode::Up => app.select_previous_item(),
+        KeyCode::Char('q') => app.quit(),
+        _ => {}
     }
 }
 
-fn render(frame: &mut Frame, app: &App) {
-    frame.render_widget(Paragraph::new("text").block(Block::new()), frame.area());
+fn render(frame: &mut Frame, app: &mut App) {
+    ui::main_screen(frame, app);
+
+    match app.current_screen {
+        CurrentScreen::Main => {}
+        CurrentScreen::Adding => {}
+        CurrentScreen::Editing => {}
+    }
 }
