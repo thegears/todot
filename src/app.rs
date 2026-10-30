@@ -87,5 +87,9 @@ impl App {
                 selected_todo.is_done = !selected_todo.is_done
             }
         }
+
+        update_file(&self.todos)?;
+
+        Ok(())
     }
 }
