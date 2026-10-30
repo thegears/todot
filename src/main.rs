@@ -6,7 +6,7 @@ use crate::{
     ui::{adding_todo_modal, main_screen},
 };
 
-use color_eyre::eyre::{Ok, OptionExt};
+use color_eyre::eyre::Ok;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
 
@@ -38,6 +38,7 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
             KeyCode::Down => app.select_next_item(),
             KeyCode::Up => app.select_previous_item(),
             KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
+            KeyCode::Char('d') => app.remove_todo()?,
             KeyCode::Char('q') => app.quit(),
 
             _ => {}
@@ -46,7 +47,7 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
         CurrentScreen::Adding => match key_event.code {
             KeyCode::Enter => {
                 if app.add_todo_input.len() > 0 {
-                    app.add_todo();
+                    app.add_todo()?;
                 }
 
                 app.current_screen = CurrentScreen::Main;

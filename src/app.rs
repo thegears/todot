@@ -69,7 +69,15 @@ impl App {
         Ok(())
     }
 
-    pub fn remove_todo(&mut self, id: usize) {}
+    pub fn remove_todo(&mut self) -> color_eyre::eyre::Result<()> {
+        if let Some(selected_todo) = self.state.selected() {
+            self.todos.remove(selected_todo);
+        }
+
+        update_file(&self.todos)?;
+
+        Ok(())
+    }
 
     pub fn edit_todo(&mut self, id: usize, new_content: String) {}
 
