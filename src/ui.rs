@@ -33,6 +33,5 @@ pub fn adding_todo_modal(frame: &mut Frame, app: &mut App) {
         .centered(Constraint::Percentage(60), Constraint::Length(10));
     let popup =
         Paragraph::new(app.add_todo_input.as_str()).block(Block::bordered().title("Add TO-DO"));
-    frame.render_widget(Clear, area);
     frame.render_widget(popup, area);
 }
