@@ -7,7 +7,8 @@ A lightweight, responsive, and crash-resilient terminal To-Do application built 
 ## ✨ Features
 
 - **As you know:** Yet another todo tool as you know.
-- **Local JSON:** The tool uses local json file for read&write.
+- **Project-based storage by default:** The tool automatically creates and read&writes a local `todot.json` in your current working directory.
+- **Global storage:** The tool can be used with global `todot.json` in `~/.local/share/todot/` via global flag.
 
 ---
 
@@ -52,6 +53,20 @@ cargo run
 cargo build --release
 
 # Build file will be on todot/target/release/
+```
+
+### Usage
+
+Todot runs project-based by default
+```bash
+todot
+```
+
+You can use global storage with -g, --global flag
+```bash
+todot -g
+#or
+todot --global
 ```
 
 ---
