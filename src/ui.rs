@@ -1,8 +1,9 @@
 use ratatui::{
     Frame,
-    layout::Constraint,
-    style::{Color, Style, Styled},
-    widgets::{Block, Clear, List, ListItem, Paragraph},
+    layout::{Alignment, Constraint},
+    style::{Color, Style, Styled, Stylize},
+    text::Line,
+    widgets::{Block, List, ListItem, Paragraph},
 };
 
 use crate::app::App;
@@ -37,8 +38,12 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
 pub fn adding_todo_modal(frame: &mut Frame, app: &mut App) {
     let area = frame
         .area()
-        .centered(Constraint::Percentage(60), Constraint::Length(10));
-    let popup =
-        Paragraph::new(app.add_todo_input.as_str()).block(Block::bordered().title("Add TO-DO"));
+        .centered(Constraint::Percentage(60), Constraint::Length(3));
+    let popup = Paragraph::new(app.add_todo_input.as_str()).block(
+        Block::bordered()
+            .title_alignment(Alignment::Center)
+            .title_top("Add TO-DO")
+            .title_bottom("[ESC] Close [Enter] Add"),
+    );
     frame.render_widget(popup, area);
 }
