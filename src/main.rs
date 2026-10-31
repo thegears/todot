@@ -148,7 +148,7 @@ fn render(frame: &mut Frame, app: &mut App) {
             editing_todo_modal(frame, app);
         }
         CurrentScreen::ConfirmAction => {
-            confirm_action(frame, app);
+            confirm_action(frame);
         }
     }
 }

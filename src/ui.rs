@@ -71,7 +71,7 @@ pub fn editing_todo_modal(frame: &mut Frame, app: &mut App) {
     frame.render_widget(popup, area);
 }
 
-pub fn confirm_action(frame: &mut Frame, app: &mut App) {
+pub fn confirm_action(frame: &mut Frame) {
     let area = frame
         .area()
         .centered(Constraint::Percentage(60), Constraint::Length(3));
