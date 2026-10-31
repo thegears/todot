@@ -24,7 +24,7 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
 
             if todo.is_done {
                 text_prefix = "[✓]";
-                text_color = Color::Green;
+                text_color = Color::DarkGray;
             } else {
                 text_prefix = "[ ]";
                 text_color = Color::White;
