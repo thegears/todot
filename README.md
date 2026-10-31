@@ -62,6 +62,8 @@ cargo build --release
 - **Crossterm**: Terminal backend
 - **color-eyre**: Error handling
 
+---
+
 ## 📄 License
 
 **MIT**
