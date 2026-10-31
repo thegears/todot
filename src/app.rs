@@ -76,7 +76,8 @@ impl App {
             self.todos.remove(selected_todo_index);
         }
 
-        update_file(&self.todos)?;
+            update_file(&self.todos)?;
+        }
 
         Ok(())
     }
@@ -101,7 +102,8 @@ impl App {
             selected_todo.is_done = !selected_todo.is_done;
         }
 
-        update_file(&self.todos)?;
+            update_file(&self.todos)?;
+        }
 
         Ok(())
     }
