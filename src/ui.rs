@@ -65,7 +65,7 @@ pub fn adding_todo_modal(frame: &mut Frame, app: &mut App) {
 
 pub fn editing_todo_modal(frame: &mut Frame, app: &mut App) {
     let width = usize::from(((60 * (frame.area().width) / 100).saturating_sub(1)).max(1));
-    let number_of_line = (app.add_todo_input.len()).div_ceil(width).max(1);
+    let number_of_line = (app.edit_todo_input.len()).div_ceil(width).max(1);
     let area = frame.area().centered(
         Constraint::Percentage(60),
         Constraint::Length(u16::try_from(number_of_line + 2).unwrap_or(u16::MAX)),
