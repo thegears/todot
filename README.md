@@ -1,6 +1,6 @@
 # todot 🦀
 
-A lightweight, responsive, and crash-resilient terminal To-Do application built with **Rust** and **Ratatui**.
+A project-based, lightweight, responsive, and crash-resilient terminal To-Do application built with **Rust** and **Ratatui**.
 
 ---
 
