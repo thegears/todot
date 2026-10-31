@@ -24,6 +24,7 @@ pub struct App {
     pub current_screen: CurrentScreen,
     pub state: ListState,
     pub add_todo_input: String,
+    pub edit_todo_input: String,
     pub should_quit: bool,
 }
 
@@ -36,6 +37,7 @@ impl App {
             current_screen: CurrentScreen::Main,
             state: ListState::default().with_selected(Some(0)),
             add_todo_input: String::new(),
+            edit_todo_input: String::new(),
             should_quit: false,
         })
     }
@@ -79,7 +81,18 @@ impl App {
         Ok(())
     }
 
-    pub fn edit_todo(&mut self, id: usize, new_content: String) {}
+    pub fn edit_todo(&mut self) -> color_eyre::eyre::Result<()> {
+        if let Some(selected_todo_index) = self.state.selected()
+            && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
+        {
+            selected_todo.content.clear();
+            selected_todo.content.push_str(&self.edit_todo_input);
+
+            update_file(&self.todos)?;
+        }
+
+        Ok(())
+    }
 
     pub fn toggle_done(&mut self) -> color_eyre::eyre::Result<()> {
         if let Some(selected_todo_index) = self.state.selected()

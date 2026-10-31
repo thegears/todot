@@ -11,7 +11,7 @@ use crate::app::App;
 pub fn main_screen(frame: &mut Frame, app: &mut App) {
     let outer_block = Block::bordered()
         .title_top(Line::from("Todot").bold().centered())
-        .title_bottom(Line::from("[a] Add [d] Delete [t] Toggle Done [q] Quit").centered())
+        .title_bottom(Line::from("[a] Add [e] Edit [d] Delete [t] Toggle Done [q] Quit").centered())
         .padding(Padding::symmetric(1, 1));
     let inner_area = outer_block.inner(frame.area());
 
@@ -53,6 +53,20 @@ pub fn adding_todo_modal(frame: &mut Frame, app: &mut App) {
             .title_alignment(Alignment::Center)
             .title_top("Add TO-DO")
             .title_bottom("[ESC] Close [Enter] Add"),
+    );
+    frame.render_widget(popup, area);
+}
+
+pub fn editing_todo_modal(frame: &mut Frame, app: &mut App) {
+    let area = frame
+        .area()
+        .centered(Constraint::Percentage(60), Constraint::Length(3));
+
+    let popup = Paragraph::new(app.edit_todo_input.as_str()).block(
+        Block::bordered()
+            .title_alignment(Alignment::Center)
+            .title_top("Edit TO-DO")
+            .title_bottom("[ESC] Close [Enter] Edit"),
     );
     frame.render_widget(popup, area);
 }

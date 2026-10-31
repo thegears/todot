@@ -3,7 +3,7 @@ mod storage;
 mod ui;
 use crate::{
     app::{App, CurrentScreen},
-    ui::{adding_todo_modal, main_screen},
+    ui::{adding_todo_modal, editing_todo_modal, main_screen},
 };
 
 use color_eyre::eyre::Ok;
@@ -38,6 +38,15 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
             KeyCode::Down => app.select_next_item(),
             KeyCode::Up => app.select_previous_item(),
             KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
+            KeyCode::Char('e') => {
+                if let Some(selected_todo_index) = app.state.selected()
+                    && let Some(selected_todo) = app.todos.get(selected_todo_index)
+                {
+                    app.edit_todo_input.clear();
+                    app.edit_todo_input.push_str(&selected_todo.content);
+                    app.current_screen = CurrentScreen::Editing;
+                }
+            }
             KeyCode::Char('t') => app.toggle_done()?,
             KeyCode::Char('d') => app.remove_todo()?,
             KeyCode::Char('q') => app.quit(),
@@ -71,7 +80,28 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
             }
         },
 
-        CurrentScreen::Editing => {}
+        CurrentScreen::Editing => match key_event.code {
+            KeyCode::Enter => {
+                if !app.edit_todo_input.is_empty() {
+                    app.edit_todo()?;
+                }
+
+                app.current_screen = CurrentScreen::Main;
+            }
+            KeyCode::Esc => {
+                app.current_screen = CurrentScreen::Main;
+            }
+
+            KeyCode::Backspace => {
+                _ = app.edit_todo_input.pop();
+            }
+
+            _ => {
+                if let Some(char) = key_event.code.as_char() {
+                    app.edit_todo_input.push(char);
+                }
+            }
+        },
     }
 
     Ok(())
@@ -85,6 +115,8 @@ fn render(frame: &mut Frame, app: &mut App) {
         CurrentScreen::Adding => {
             adding_todo_modal(frame, app);
         }
-        CurrentScreen::Editing => {}
+        CurrentScreen::Editing => {
+            editing_todo_modal(frame, app);
+        }
     }
 }
