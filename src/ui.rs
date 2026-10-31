@@ -19,13 +19,19 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
         .todos
         .iter()
         .map(|todo| {
-            let text_color = if todo.is_done {
-                Color::Green
-            } else {
-                Color::White
-            };
+            let text_prefix: &str;
+            let text_color: Color;
 
-            ListItem::new(todo.content.as_str()).set_style(Style::new().fg(text_color))
+            if todo.is_done {
+                text_prefix = "[✓]";
+                text_color = Color::Green;
+            } else {
+                text_prefix = "[ ]";
+                text_color = Color::White;
+            }
+
+            ListItem::new(format!("{} {}", text_prefix, todo.content.as_str()))
+                .set_style(Style::new().fg(text_color))
         })
         .collect();
 
