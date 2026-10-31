@@ -84,7 +84,6 @@ impl App {
     pub fn remove_todo(&mut self) -> color_eyre::eyre::Result<()> {
         if let Some(selected_todo_index) = self.state.selected() {
             self.todos.remove(selected_todo_index);
-        }
 
             update_file(&self.todos)?;
         }
