@@ -70,3 +70,17 @@ pub fn editing_todo_modal(frame: &mut Frame, app: &mut App) {
     );
     frame.render_widget(popup, area);
 }
+
+pub fn confirm_action(frame: &mut Frame, app: &mut App) {
+    let area = frame
+        .area()
+        .centered(Constraint::Percentage(60), Constraint::Length(3));
+
+    let popup = Paragraph::new(app.edit_todo_input.as_str()).block(
+        Block::bordered()
+            .title_alignment(Alignment::Center)
+            .title_top("Confirm Action")
+            .title_bottom("[y] Yes [n] No"),
+    );
+    frame.render_widget(popup, area);
+}

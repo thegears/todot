@@ -2,8 +2,8 @@ mod app;
 mod storage;
 mod ui;
 use crate::{
-    app::{App, CurrentScreen},
-    ui::{adding_todo_modal, editing_todo_modal, main_screen},
+    app::{App, CurrentAction, CurrentScreen},
+    ui::{adding_todo_modal, confirm_action, editing_todo_modal, main_screen},
 };
 
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
@@ -47,7 +47,12 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
                 }
             }
             KeyCode::Char('t') => app.toggle_done()?,
-            KeyCode::Char('d') => app.remove_todo()?,
+            KeyCode::Char('d') => {
+                if !app.todos.is_empty() {
+                    app.current_action = CurrentAction::Delete;
+                    app.current_screen = CurrentScreen::ConfirmAction;
+                }
+            }
             KeyCode::Char('q') => app.quit(),
 
             _ => {}
@@ -82,10 +87,9 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
         CurrentScreen::Editing => match key_event.code {
             KeyCode::Enter => {
                 if !app.edit_todo_input.is_empty() {
-                    app.edit_todo()?;
+                    app.current_action = CurrentAction::Edit;
+                    app.current_screen = CurrentScreen::ConfirmAction;
                 }
-
-                app.current_screen = CurrentScreen::Main;
             }
             KeyCode::Esc => {
                 app.current_screen = CurrentScreen::Main;
@@ -100,6 +104,32 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
                     app.edit_todo_input.push(char);
                 }
             }
+        },
+
+        CurrentScreen::ConfirmAction => match key_event.code {
+            KeyCode::Char('y') => {
+                match app.current_action {
+                    CurrentAction::Delete => {
+                        app.remove_todo()?;
+                    }
+
+                    CurrentAction::Edit => {
+                        app.edit_todo()?;
+                    }
+
+                    CurrentAction::None => {}
+                }
+
+                app.current_action = CurrentAction::None;
+                app.current_screen = CurrentScreen::Main;
+            }
+
+            KeyCode::Char('n') => {
+                app.current_action = CurrentAction::None;
+                app.current_screen = CurrentScreen::Main;
+            }
+
+            _ => {}
         },
     }
 
@@ -116,6 +146,9 @@ fn render(frame: &mut Frame, app: &mut App) {
         }
         CurrentScreen::Editing => {
             editing_todo_modal(frame, app);
+        }
+        CurrentScreen::ConfirmAction => {
+            confirm_action(frame, app);
         }
     }
 }

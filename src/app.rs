@@ -27,6 +27,14 @@ pub enum CurrentScreen {
     Main,
     Adding,
     Editing,
+    ConfirmAction,
+}
+
+#[derive(PartialEq)]
+pub enum CurrentAction {
+    Delete,
+    Edit,
+    None,
 }
 
 pub struct App {
@@ -35,6 +43,7 @@ pub struct App {
     pub state: ListState,
     pub add_todo_input: String,
     pub edit_todo_input: String,
+    pub current_action: CurrentAction,
     pub should_quit: bool,
 }
 
@@ -48,6 +57,7 @@ impl App {
             state: ListState::default().with_selected(Some(0)),
             add_todo_input: String::new(),
             edit_todo_input: String::new(),
+            current_action: CurrentAction::None,
             should_quit: false,
         })
     }
