@@ -35,7 +35,9 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
         })
         .collect();
 
-    let list = List::new(items).highlight_symbol(">");
+    let list = List::new(items)
+        .highlight_symbol(">")
+        .highlight_style(Style::new().bold());
 
     frame.render_widget(outer_block, frame.area());
 
