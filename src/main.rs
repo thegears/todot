@@ -6,7 +6,6 @@ use crate::{
     ui::{adding_todo_modal, editing_todo_modal, main_screen},
 };
 
-use color_eyre::eyre::Ok;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
 
