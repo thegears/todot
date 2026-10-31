@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Alignment, Constraint},
     style::{Color, Style, Styled, Stylize},
     text::Line,
-    widgets::{Block, List, ListItem, Padding, Paragraph},
+    widgets::{Block, List, ListItem, Padding, Paragraph, Wrap},
 };
 
 use crate::app::App;
@@ -45,22 +45,31 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
 }
 
 pub fn adding_todo_modal(frame: &mut Frame, app: &mut App) {
-    let area = frame
-        .area()
-        .centered(Constraint::Percentage(60), Constraint::Length(3));
-    let popup = Paragraph::new(app.add_todo_input.as_str()).block(
-        Block::bordered()
-            .title_alignment(Alignment::Center)
-            .title_top("Add TO-DO")
-            .title_bottom("[ESC] Close [Enter] Add"),
+    let width = usize::from(((60 * (frame.area().width) / 100).saturating_sub(1)).max(1));
+    let number_of_line = (app.add_todo_input.len()).div_ceil(width).max(1);
+    let area = frame.area().centered(
+        Constraint::Percentage(60),
+        Constraint::Length(u16::try_from(number_of_line + 2).unwrap_or(u16::MAX)),
     );
+
+    let popup = Paragraph::new(app.add_todo_input.as_str())
+        .wrap(Wrap { trim: true })
+        .block(
+            Block::bordered()
+                .title_alignment(Alignment::Center)
+                .title_top("Add TO-DO")
+                .title_bottom("[ESC] Close [Enter] Add"),
+        );
     frame.render_widget(popup, area);
 }
 
 pub fn editing_todo_modal(frame: &mut Frame, app: &mut App) {
-    let area = frame
-        .area()
-        .centered(Constraint::Percentage(60), Constraint::Length(3));
+    let width = usize::from(((60 * (frame.area().width) / 100).saturating_sub(1)).max(1));
+    let number_of_line = (app.add_todo_input.len()).div_ceil(width).max(1);
+    let area = frame.area().centered(
+        Constraint::Percentage(60),
+        Constraint::Length(u16::try_from(number_of_line + 2).unwrap_or(u16::MAX)),
+    );
 
     let popup = Paragraph::new(app.edit_todo_input.as_str()).block(
         Block::bordered()
