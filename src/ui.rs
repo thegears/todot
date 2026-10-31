@@ -3,7 +3,7 @@ use ratatui::{
     layout::{Alignment, Constraint},
     style::{Color, Style, Styled, Stylize},
     text::Line,
-    widgets::{Block, List, ListItem, Paragraph},
+    widgets::{Block, List, ListItem, Padding, Paragraph},
 };
 
 use crate::app::App;
@@ -11,7 +11,8 @@ use crate::app::App;
 pub fn main_screen(frame: &mut Frame, app: &mut App) {
     let outer_block = Block::bordered()
         .title_top(Line::from("Todot").bold().centered())
-        .title_bottom(Line::from("[a] Add [d] Delete [t] Toggle Done [q] Quit").centered());
+        .title_bottom(Line::from("[a] Add [d] Delete [t] Toggle Done [q] Quit").centered())
+        .padding(Padding::symmetric(1, 1));
     let inner_area = outer_block.inner(frame.area());
 
     let items: Vec<ListItem> = app
