@@ -58,11 +58,13 @@ cargo build --release
 ### Usage
 
 Todot runs project-based by default
+
 ```bash
 todot
 ```
 
 You can use global storage with -g, --global flag
+
 ```bash
 todot -g
 #or
