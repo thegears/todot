@@ -8,6 +8,11 @@ use ratatui::{
 use crate::app::App;
 
 pub fn main_screen(frame: &mut Frame, app: &mut App) {
+    let outer_block = Block::bordered()
+        .title_top(Line::from("Todot").bold().centered())
+        .title_bottom(Line::from("[a] Add [d] Delete [t] Toggle Done [q] Quit").centered());
+    let inner_area = outer_block.inner(frame.area());
+
     let items: Vec<ListItem> = app
         .todos
         .iter()
@@ -24,7 +29,9 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
 
     let list = List::new(items).highlight_symbol(">");
 
-    frame.render_stateful_widget(list, frame.area(), &mut app.state);
+    frame.render_widget(outer_block, frame.area());
+
+    frame.render_stateful_widget(list, inner_area, &mut app.state);
 }
 
 pub fn adding_todo_modal(frame: &mut Frame, app: &mut App) {
