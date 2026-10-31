@@ -1,5 +1,5 @@
 use color_eyre::eyre::OptionExt;
-use std::{fs, path::PathBuf};
+use std::{env, fs, path::PathBuf};
 
 use serde_derive::Deserialize;
 
@@ -11,12 +11,22 @@ pub struct AppData {
 }
 
 fn get_path() -> color_eyre::Result<PathBuf> {
-    let local_dir = dirs::data_local_dir().ok_or_eyre("Error on finding local dir!")?;
-    let todot_dir_path = local_dir.join("todot");
-    let json_path = todot_dir_path.join("todot.json");
+    let is_global = env::args().any(|arg| arg == "--global" || arg == "-g");
 
-    if !todot_dir_path.exists() {
-        fs::create_dir_all(todot_dir_path)?;
+    let json_path: PathBuf;
+
+    if is_global {
+        let local_dir = dirs::data_local_dir().ok_or_eyre("Error on finding local dir!")?;
+        let todot_dir_path = local_dir.join("todot");
+        json_path = todot_dir_path.join("todot.json");
+
+        if !todot_dir_path.exists() {
+            fs::create_dir_all(todot_dir_path)?;
+        }
+    } else {
+        json_path = env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join("todot.json");
     }
 
     if !json_path.exists() {
