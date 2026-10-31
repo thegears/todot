@@ -11,6 +11,17 @@ pub struct Todo {
     pub id: usize,
 }
 
+impl Todo {
+    fn update_content(&mut self, new_content: &str) {
+        self.content.clear();
+        self.content.push_str(new_content);
+    }
+
+    fn toggle_done(&mut self) {
+        self.is_done = !self.is_done;
+    }
+}
+
 #[derive(PartialEq)]
 pub enum CurrentScreen {
     Main,
@@ -85,8 +96,7 @@ impl App {
         if let Some(selected_todo_index) = self.state.selected()
             && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
         {
-            selected_todo.content.clear();
-            selected_todo.content.push_str(&self.edit_todo_input);
+            selected_todo.update_content(&self.edit_todo_input);
 
             update_file(&self.todos)?;
         }
@@ -98,8 +108,7 @@ impl App {
         if let Some(selected_todo_index) = self.state.selected()
             && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
         {
-            selected_todo.is_done = !selected_todo.is_done;
-        }
+            selected_todo.toggle_done();
 
             update_file(&self.todos)?;
         }
