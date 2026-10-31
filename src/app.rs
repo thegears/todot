@@ -1,5 +1,4 @@
 use crate::storage::{get_todos_from_file, update_file};
-use color_eyre::eyre::Ok;
 use serde::Serialize;
 use serde_derive::Deserialize;
 
