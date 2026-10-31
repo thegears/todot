@@ -32,6 +32,12 @@ A lightweight, responsive, and crash-resilient terminal To-Do application built 
 
 - [Rust & Cargo](https://www.rust-lang.org/tools/install) (latest stable)
 
+### Direct install via Cargo
+
+```bash
+cargo install --git https://github.com/thegears/todot
+```
+
 ### Build & Run
 
 ```bash
