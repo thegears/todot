@@ -76,6 +76,8 @@ impl App {
             id: new_todo_id,
         });
 
+        self.state.select_last();
+
         update_file(&self.todos)?;
 
         Ok(())
