@@ -31,32 +31,42 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
     Ok(())
 }
 
-fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()> {
-    match app.current_screen {
-        CurrentScreen::Main => match key_event.code {
-            KeyCode::Down => app.select_next_item(),
-            KeyCode::Up => app.select_previous_item(),
-            KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
-            KeyCode::Char('e') => {
-                if let Some(selected_todo_index) = app.state.selected()
-                    && let Some(selected_todo) = app.todos.get(selected_todo_index)
-                {
-                    app.edit_todo_input.clear();
-                    app.edit_todo_input.push_str(&selected_todo.content);
-                    app.current_screen = CurrentScreen::Editing;
-                }
-            }
-            KeyCode::Char('t') => app.toggle_done()?,
-            KeyCode::Char('d') => {
-                if !app.todos.is_empty() {
-                    app.current_action = CurrentAction::Delete;
-                    app.current_screen = CurrentScreen::ConfirmAction;
-                }
-            }
-            KeyCode::Char('q') => app.quit(),
+fn lowercase_key_event(mut key_event: KeyEvent) -> KeyEvent {
+    if let KeyCode::Char(c) = key_event.code {
+        key_event.code = KeyCode::Char(c.to_lowercase().next().unwrap_or(c));
+    }
+    key_event
+}
 
-            _ => {}
-        },
+fn handle_key_event(mut key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()> {
+    match app.current_screen {
+        CurrentScreen::Main => {
+            key_event = lowercase_key_event(key_event);
+            match key_event.code {
+                KeyCode::Down => app.select_next_item(),
+                KeyCode::Up => app.select_previous_item(),
+                KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
+                KeyCode::Char('e') => {
+                    if let Some(selected_todo_index) = app.state.selected()
+                        && let Some(selected_todo) = app.todos.get(selected_todo_index)
+                    {
+                        app.edit_todo_input.clear();
+                        app.edit_todo_input.push_str(&selected_todo.content);
+                        app.current_screen = CurrentScreen::Editing;
+                    }
+                }
+                KeyCode::Char('t') => app.toggle_done()?,
+                KeyCode::Char('d') => {
+                    if !app.todos.is_empty() {
+                        app.current_action = CurrentAction::Delete;
+                        app.current_screen = CurrentScreen::ConfirmAction;
+                    }
+                }
+                KeyCode::Char('q') => app.quit(),
+
+                _ => {}
+            }
+        }
 
         CurrentScreen::Adding => match key_event.code {
             KeyCode::Enter => {
@@ -107,6 +117,8 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
         },
 
         CurrentScreen::ConfirmAction => {
+            key_event = lowercase_key_event(key_event);
+
             if key_event.code == KeyCode::Char('y') {
                 match app.current_action {
                     CurrentAction::Delete => {
