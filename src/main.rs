@@ -121,8 +121,10 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
                 }
             }
 
-            app.current_action = CurrentAction::None;
-            app.current_screen = CurrentScreen::Main;
+            if matches!(key_event.code, KeyCode::Char('y' | 'n')) {
+                app.current_action = CurrentAction::None;
+                app.current_screen = CurrentScreen::Main;
+            }
         }
     }
 
