@@ -2,9 +2,10 @@ use ratatui::{
     Frame,
     layout::{Alignment, Constraint},
     style::{Color, Style, Styled, Stylize},
-    text::Line,
+    text::{Line, Text},
     widgets::{Block, List, ListItem, Padding, Paragraph, Wrap},
 };
+use textwrap::wrap;
 
 use crate::app::App;
 
@@ -30,8 +31,15 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
                 text_color = Color::White;
             }
 
-            ListItem::new(format!("{} {}", text_prefix, todo.content.as_str()))
-                .set_style(Style::new().fg(text_color))
+            let lines: Vec<Line> = wrap(
+                format!("{} {}", text_prefix, todo.content.as_str()).as_str(),
+                frame.area().width as usize,
+            )
+            .into_iter()
+            .map(|cow| Line::from(cow.into_owned()))
+            .collect();
+
+            ListItem::new(Text::from(lines)).set_style(Style::new().fg(text_color))
         })
         .collect();
 
