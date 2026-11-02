@@ -133,7 +133,7 @@ fn handle_key_event(mut key_event: KeyEvent, app: &mut App) -> color_eyre::Resul
                 }
             }
 
-            if matches!(key_event.code, KeyCode::Char('y' | 'n')) {
+            if matches!(key_event.code, KeyCode::Char('y' | 'n') | KeyCode::Esc) {
                 app.current_action = CurrentAction::None;
                 app.current_screen = CurrentScreen::Main;
             }
