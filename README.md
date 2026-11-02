@@ -2,7 +2,7 @@
 
 A project-based, lightweight, responsive, and crash-resilient terminal To-Do application built with **Rust** and **Ratatui**.
 
-[![asciicast](https://asciinema.org/a/FJeVh0P85rVfjtth.svg)](https://asciinema.org/a/FJeVh0P85rVfjtth)
+<img width="2361" height="1411" alt="demo" src="https://github.com/user-attachments/assets/358a40af-85f1-46ba-8e16-eb7940d11426" />
 
 ---
 
