@@ -106,8 +106,8 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
             }
         },
 
-        CurrentScreen::ConfirmAction => match key_event.code {
-            KeyCode::Char('y') => {
+        CurrentScreen::ConfirmAction => {
+            if key_event.code == KeyCode::Char('y') {
                 match app.current_action {
                     CurrentAction::Delete => {
                         app.remove_todo()?;
@@ -119,18 +119,11 @@ fn handle_key_event(key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()
 
                     CurrentAction::None => {}
                 }
-
-                app.current_action = CurrentAction::None;
-                app.current_screen = CurrentScreen::Main;
             }
 
-            KeyCode::Char('n') => {
-                app.current_action = CurrentAction::None;
-                app.current_screen = CurrentScreen::Main;
-            }
-
-            _ => {}
-        },
+            app.current_action = CurrentAction::None;
+            app.current_screen = CurrentScreen::Main;
+        }
     }
 
     Ok(())
