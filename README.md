@@ -57,6 +57,10 @@ cargo build --release
 # Build file will be on todot/target/release/
 ```
 
+### Pre-built Binary
+
+Download the latest executable directly from [Releases](https://github.com/thegears/todot/releases).
+
 ### Usage
 
 Todot runs project-based by default
