@@ -3,7 +3,7 @@ use std::{env, fs, path::PathBuf};
 
 use serde_derive::Deserialize;
 
-use crate::app::Todo;
+use crate::models::Todo;
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct AppData {

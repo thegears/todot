@@ -1,6 +1,8 @@
 mod app;
+mod models;
 mod storage;
 mod ui;
+
 use crate::{
     app::{App, CurrentAction, CurrentScreen},
     ui::{adding_todo_modal, confirm_action, editing_todo_modal, main_screen},

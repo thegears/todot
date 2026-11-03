@@ -1,26 +1,9 @@
-use crate::storage::{get_todos_from_file, update_file};
-use serde::Serialize;
-use serde_derive::Deserialize;
+use crate::{
+    models::Todo,
+    storage::{get_todos_from_file, update_file},
+};
 
 use ratatui::widgets::ListState;
-
-#[derive(Debug, PartialEq, Deserialize, Serialize)]
-pub struct Todo {
-    pub content: String,
-    pub is_done: bool,
-    pub id: usize,
-}
-
-impl Todo {
-    fn update_content(&mut self, new_content: &str) {
-        self.content.clear();
-        self.content.push_str(new_content);
-    }
-
-    fn toggle_done(&mut self) {
-        self.is_done = !self.is_done;
-    }
-}
 
 #[derive(PartialEq)]
 pub enum CurrentScreen {
