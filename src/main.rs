@@ -5,10 +5,19 @@ mod todo_manager;
 mod ui;
 
 use crate::{
-    app::{App, CurrentAction, CurrentScreen},
-    ui::{adding_todo_modal, confirm_action, editing_todo_modal, main_screen},
+    app::App,
+    ui::{
+        main_screen,
+        modals::{
+            ModalAction,
+            adding_modal::AddingModal,
+            confirming_modal::{ConfirmActions, ConfirmingModal},
+            editing_modal::EditingModal,
+        },
+    },
 };
 
+use color_eyre::eyre::Ok;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
 
@@ -25,7 +34,44 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
         terminal.draw(|frame| render(frame, app))?;
         match crossterm::event::read()? {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                handle_key_event(key_event, app)?;
+                if app.current_modal.is_some() {
+                    if let Some(mut modal) = app.current_modal.take() {
+                        let result = modal.handle_key_event(app, key_event)?;
+
+                        match result {
+                            ModalAction::Close => app.current_modal = None,
+                            ModalAction::Keep => app.current_modal = Some(modal),
+                            ModalAction::Switch(next_modal) => app.current_modal = Some(next_modal),
+                        }
+                    }
+                } else {
+                    let key_event = lowercase_key_event(key_event);
+                    match key_event.code {
+                        KeyCode::Down => app.state.select_next(),
+                        KeyCode::Up => app.state.select_previous(),
+                        KeyCode::Char('a') => {
+                            app.current_modal = Option::Some(Box::new(AddingModal {
+                                input: String::new(),
+                            }));
+                        }
+                        KeyCode::Char('e') => {
+                            app.current_modal = Option::Some(Box::new(EditingModal {
+                                input: String::new(),
+                            }));
+                        }
+                        KeyCode::Char('t') => app.todo_manager.toggle_done_todo(&app.state)?,
+                        KeyCode::Char('d') => {
+                            if !app.todo_manager.todos.is_empty() {
+                                app.current_modal = Option::Some(Box::new(ConfirmingModal {
+                                    action_to_confirm: ConfirmActions::Delete,
+                                }));
+                            }
+                        }
+                        KeyCode::Char('q') => app.quit(),
+
+                        _ => {}
+                    }
+                }
             }
             _ => {}
         }
@@ -41,127 +87,10 @@ fn lowercase_key_event(mut key_event: KeyEvent) -> KeyEvent {
     key_event
 }
 
-fn handle_key_event(mut key_event: KeyEvent, app: &mut App) -> color_eyre::Result<()> {
-    match app.current_screen {
-        CurrentScreen::Main => {
-            key_event = lowercase_key_event(key_event);
-            match key_event.code {
-                KeyCode::Down => app.select_next_item(),
-                KeyCode::Up => app.select_previous_item(),
-                KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
-                KeyCode::Char('e') => {
-                    if let Some(selected_todo_index) = app.state.selected()
-                        && let Some(selected_todo) = app.todo_manager.todos.get(selected_todo_index)
-                    {
-                        app.edit_todo_input.clear();
-                        app.edit_todo_input.push_str(&selected_todo.content);
-                        app.current_screen = CurrentScreen::Editing;
-                    }
-                }
-                KeyCode::Char('t') => app.todo_manager.toggle_done_todo(&app.state)?,
-                KeyCode::Char('d') => {
-                    if !app.todo_manager.todos.is_empty() {
-                        app.current_action = CurrentAction::Delete;
-                        app.current_screen = CurrentScreen::ConfirmAction;
-                    }
-                }
-                KeyCode::Char('q') => app.quit(),
-
-                _ => {}
-            }
-        }
-
-        CurrentScreen::Adding => match key_event.code {
-            KeyCode::Enter => {
-                if !app.add_todo_input.is_empty() {
-                    app.todo_manager.create_todo(&app.add_todo_input)?;
-                    app.state.select_last();
-                    app.add_todo_input.clear();
-                }
-
-                app.current_screen = CurrentScreen::Main;
-            }
-
-            KeyCode::Esc => {
-                app.add_todo_input.clear();
-
-                app.current_screen = CurrentScreen::Main;
-            }
-
-            KeyCode::Backspace => {
-                _ = app.add_todo_input.pop();
-            }
-
-            _ => {
-                if let Some(char) = key_event.code.as_char() {
-                    app.add_todo_input.push(char);
-                }
-            }
-        },
-
-        CurrentScreen::Editing => match key_event.code {
-            KeyCode::Enter => {
-                if !app.edit_todo_input.is_empty() {
-                    app.current_action = CurrentAction::Edit;
-                    app.current_screen = CurrentScreen::ConfirmAction;
-                }
-            }
-            KeyCode::Esc => {
-                app.current_screen = CurrentScreen::Main;
-            }
-
-            KeyCode::Backspace => {
-                _ = app.edit_todo_input.pop();
-            }
-
-            _ => {
-                if let Some(char) = key_event.code.as_char() {
-                    app.edit_todo_input.push(char);
-                }
-            }
-        },
-
-        CurrentScreen::ConfirmAction => {
-            key_event = lowercase_key_event(key_event);
-
-            if key_event.code == KeyCode::Char('y') {
-                match app.current_action {
-                    CurrentAction::Delete => {
-                        app.todo_manager.delete_todo(&app.state)?;
-                    }
-
-                    CurrentAction::Edit => {
-                        app.todo_manager
-                            .edit_todo(&app.edit_todo_input, &app.state)?;
-                    }
-
-                    CurrentAction::None => {}
-                }
-            }
-
-            if matches!(key_event.code, KeyCode::Char('y' | 'n') | KeyCode::Esc) {
-                app.current_action = CurrentAction::None;
-                app.current_screen = CurrentScreen::Main;
-            }
-        }
-    }
-
-    Ok(())
-}
-
 fn render(frame: &mut Frame, app: &mut App) {
-    main_screen(frame, app);
+    main_screen(frame, &app.todo_manager.todos, &mut app.state);
 
-    match app.current_screen {
-        CurrentScreen::Main => {}
-        CurrentScreen::Adding => {
-            adding_todo_modal(frame, app);
-        }
-        CurrentScreen::Editing => {
-            editing_todo_modal(frame, app);
-        }
-        CurrentScreen::ConfirmAction => {
-            confirm_action(frame);
-        }
+    if let Some(modal) = &mut app.current_modal {
+        modal.render(frame);
     }
 }

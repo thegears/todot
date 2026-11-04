@@ -1,31 +1,14 @@
 use crate::storage::JsonStorage;
 
 use crate::todo_manager::TodoManager;
+use crate::ui::modals::Modal;
 
 use ratatui::widgets::ListState;
 
-#[derive(PartialEq)]
-pub enum CurrentScreen {
-    Main,
-    Adding,
-    Editing,
-    ConfirmAction,
-}
-
-#[derive(PartialEq)]
-pub enum CurrentAction {
-    Delete,
-    Edit,
-    None,
-}
-
 pub struct App {
     pub todo_manager: TodoManager,
-    pub current_screen: CurrentScreen,
     pub state: ListState,
-    pub add_todo_input: String,
-    pub edit_todo_input: String,
-    pub current_action: CurrentAction,
+    pub current_modal: Option<Box<dyn Modal>>,
     pub should_quit: bool,
 }
 
@@ -36,21 +19,10 @@ impl App {
 
         Ok(Self {
             todo_manager,
-            current_screen: CurrentScreen::Main,
             state: ListState::default().with_selected(Some(0)),
-            add_todo_input: String::new(),
-            edit_todo_input: String::new(),
-            current_action: CurrentAction::None,
+            current_modal: Option::None,
             should_quit: false,
         })
-    }
-
-    pub fn select_next_item(&mut self) {
-        self.state.select_next();
-    }
-
-    pub fn select_previous_item(&mut self) {
-        self.state.select_previous();
     }
 
     pub fn quit(&mut self) {
