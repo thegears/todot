@@ -1,7 +1,6 @@
-use crate::{
-    models::Todo,
-    storage::{get_todos_from_file, update_file},
-};
+use crate::storage::JsonStorage;
+
+use crate::todo_manager::TodoManager;
 
 use ratatui::widgets::ListState;
 
@@ -21,7 +20,7 @@ pub enum CurrentAction {
 }
 
 pub struct App {
-    pub todos: Vec<Todo>,
+    pub todo_manager: TodoManager,
     pub current_screen: CurrentScreen,
     pub state: ListState,
     pub add_todo_input: String,
@@ -32,10 +31,11 @@ pub struct App {
 
 impl App {
     pub fn new() -> color_eyre::Result<Self> {
-        let todos = get_todos_from_file()?;
+        let storage = Box::new(JsonStorage::new());
+        let todo_manager = TodoManager::new(storage)?;
 
         Ok(Self {
-            todos,
+            todo_manager,
             current_screen: CurrentScreen::Main,
             state: ListState::default().with_selected(Some(0)),
             add_todo_input: String::new(),
@@ -55,58 +55,5 @@ impl App {
 
     pub fn quit(&mut self) {
         self.should_quit = true;
-    }
-
-    pub fn add_todo(&mut self) -> color_eyre::Result<()> {
-        let new_todo_id = match self.todos.last() {
-            Some(last_todo) => last_todo.id + 1,
-            None => 0,
-        };
-
-        self.todos.push(Todo {
-            content: std::mem::take(&mut self.add_todo_input),
-            is_done: false,
-            id: new_todo_id,
-        });
-
-        self.state.select_last();
-
-        update_file(&self.todos)?;
-
-        Ok(())
-    }
-
-    pub fn remove_todo(&mut self) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_todo_index) = self.state.selected() {
-            self.todos.remove(selected_todo_index);
-
-            update_file(&self.todos)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn edit_todo(&mut self) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_todo_index) = self.state.selected()
-            && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
-        {
-            selected_todo.update_content(&self.edit_todo_input);
-
-            update_file(&self.todos)?;
-        }
-
-        Ok(())
-    }
-
-    pub fn toggle_done(&mut self) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_todo_index) = self.state.selected()
-            && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
-        {
-            selected_todo.toggle_done();
-
-            update_file(&self.todos)?;
-        }
-
-        Ok(())
     }
 }

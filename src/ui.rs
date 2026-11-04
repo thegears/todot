@@ -17,6 +17,7 @@ pub fn main_screen(frame: &mut Frame, app: &mut App) {
     let inner_area = outer_block.inner(frame.area());
 
     let items: Vec<ListItem> = app
+        .todo_manager
         .todos
         .iter()
         .map(|todo| {

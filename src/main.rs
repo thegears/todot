@@ -1,6 +1,7 @@
 mod app;
 mod models;
 mod storage;
+mod todo_manager;
 mod ui;
 
 use crate::{
@@ -50,16 +51,16 @@ fn handle_key_event(mut key_event: KeyEvent, app: &mut App) -> color_eyre::Resul
                 KeyCode::Char('a') => app.current_screen = CurrentScreen::Adding,
                 KeyCode::Char('e') => {
                     if let Some(selected_todo_index) = app.state.selected()
-                        && let Some(selected_todo) = app.todos.get(selected_todo_index)
+                        && let Some(selected_todo) = app.todo_manager.todos.get(selected_todo_index)
                     {
                         app.edit_todo_input.clear();
                         app.edit_todo_input.push_str(&selected_todo.content);
                         app.current_screen = CurrentScreen::Editing;
                     }
                 }
-                KeyCode::Char('t') => app.toggle_done()?,
+                KeyCode::Char('t') => app.todo_manager.toggle_done_todo(&app.state)?,
                 KeyCode::Char('d') => {
-                    if !app.todos.is_empty() {
+                    if !app.todo_manager.todos.is_empty() {
                         app.current_action = CurrentAction::Delete;
                         app.current_screen = CurrentScreen::ConfirmAction;
                     }
@@ -73,7 +74,9 @@ fn handle_key_event(mut key_event: KeyEvent, app: &mut App) -> color_eyre::Resul
         CurrentScreen::Adding => match key_event.code {
             KeyCode::Enter => {
                 if !app.add_todo_input.is_empty() {
-                    app.add_todo()?;
+                    app.todo_manager.create_todo(&app.add_todo_input)?;
+                    app.state.select_last();
+                    app.add_todo_input.clear();
                 }
 
                 app.current_screen = CurrentScreen::Main;
@@ -124,11 +127,12 @@ fn handle_key_event(mut key_event: KeyEvent, app: &mut App) -> color_eyre::Resul
             if key_event.code == KeyCode::Char('y') {
                 match app.current_action {
                     CurrentAction::Delete => {
-                        app.remove_todo()?;
+                        app.todo_manager.delete_todo(&app.state)?;
                     }
 
                     CurrentAction::Edit => {
-                        app.edit_todo()?;
+                        app.todo_manager
+                            .edit_todo(&app.edit_todo_input, &app.state)?;
                     }
 
                     CurrentAction::None => {}
