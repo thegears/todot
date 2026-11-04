@@ -55,9 +55,14 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
                             }));
                         }
                         KeyCode::Char('e') => {
-                            app.current_modal = Option::Some(Box::new(EditingModal {
-                                input: String::new(),
-                            }));
+                            if let Some(selected_todo_index) = app.state.selected()
+                                && let Some(selected_todo) =
+                                    app.todo_manager.todos.get(selected_todo_index)
+                            {
+                                app.current_modal = Option::Some(Box::new(EditingModal {
+                                    input: String::from(&selected_todo.content),
+                                }));
+                            }
                         }
                         KeyCode::Char('t') => app.todo_manager.toggle_done_todo(&app.state)?,
                         KeyCode::Char('d') => {
