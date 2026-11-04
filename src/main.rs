@@ -17,7 +17,6 @@ use crate::{
     },
 };
 
-use color_eyre::eyre::Ok;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{DefaultTerminal, Frame};
 
