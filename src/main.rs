@@ -7,7 +7,7 @@ mod ui;
 use crate::{
     app::App,
     ui::{
-        main_screen,
+        main_screen::main_screen,
         modals::{
             ModalAction,
             adding_modal::AddingModal,
