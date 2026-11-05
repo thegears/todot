@@ -18,3 +18,16 @@ impl Todo {
         self.is_done = !self.is_done;
     }
 }
+
+#[derive(Debug, PartialEq, Deserialize, Serialize)]
+pub struct Group {
+    pub id: usize,
+    pub name: String,
+    pub is_collapsed: bool,
+}
+
+impl Group {
+    pub fn toggle_collapse(&mut self) {
+        self.is_collapsed = !self.is_collapsed;
+    }
+}
