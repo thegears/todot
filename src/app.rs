@@ -24,8 +24,4 @@ impl App {
             should_quit: false,
         })
     }
-
-    pub fn quit(&mut self) {
-        self.should_quit = true;
-    }
 }

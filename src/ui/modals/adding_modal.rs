@@ -8,7 +8,7 @@ use ratatui::{
 
 use crate::{
     app::App,
-    ui::modals::{Modal, ModalAction},
+    ui::{Action, modals::Modal},
 };
 
 pub struct AddingModal {
@@ -35,11 +35,7 @@ impl Modal for AddingModal {
         frame.render_widget(popup, area);
     }
 
-    fn handle_key_event(
-        &mut self,
-        app: &mut App,
-        key_event: KeyEvent,
-    ) -> eyre::Result<ModalAction> {
+    fn handle_key_event(&mut self, app: &mut App, key_event: KeyEvent) -> eyre::Result<Action> {
         match key_event.code {
             KeyCode::Enter => {
                 if !&self.input.is_empty() {
@@ -48,26 +44,26 @@ impl Modal for AddingModal {
                     self.input.clear();
                 }
 
-                Ok(ModalAction::Close)
+                Ok(Action::Close)
             }
 
             KeyCode::Esc => {
                 self.input.clear();
 
-                Ok(ModalAction::Close)
+                Ok(Action::Close)
             }
 
             KeyCode::Backspace => {
                 _ = self.input.pop();
 
-                Ok(ModalAction::Keep)
+                Ok(Action::None)
             }
 
             _ => {
                 if let Some(char) = key_event.code.as_char() {
                     self.input.push(char);
                 }
-                Ok(ModalAction::Keep)
+                Ok(Action::None)
             }
         }
     }

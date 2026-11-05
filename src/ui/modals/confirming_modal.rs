@@ -8,7 +8,7 @@ use ratatui::{
 
 use crate::{
     app::App,
-    ui::modals::{Modal, ModalAction},
+    ui::{Action, modals::Modal},
 };
 
 pub enum ConfirmActions {
@@ -35,11 +35,7 @@ impl Modal for ConfirmingModal {
         frame.render_widget(popup, area);
     }
 
-    fn handle_key_event(
-        &mut self,
-        app: &mut App,
-        key_event: KeyEvent,
-    ) -> eyre::Result<ModalAction> {
+    fn handle_key_event(&mut self, app: &mut App, key_event: KeyEvent) -> eyre::Result<Action> {
         if key_event.code == KeyCode::Char('y') {
             match &mut self.action_to_confirm {
                 ConfirmActions::Delete => {
@@ -57,9 +53,9 @@ impl Modal for ConfirmingModal {
         if matches!(key_event.code, KeyCode::Char('y' | 'n') | KeyCode::Esc) {
             self.action_to_confirm = ConfirmActions::None;
 
-            Ok(ModalAction::Close)
+            Ok(Action::Close)
         } else {
-            Ok(ModalAction::Keep)
+            Ok(Action::None)
         }
     }
 }

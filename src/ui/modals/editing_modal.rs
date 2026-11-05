@@ -7,9 +7,12 @@ use ratatui::{
 
 use crate::{
     app::App,
-    ui::modals::{
-        Modal, ModalAction,
-        confirming_modal::{ConfirmActions, ConfirmingModal},
+    ui::{
+        Action,
+        modals::{
+            Modal,
+            confirming_modal::{ConfirmActions, ConfirmingModal},
+        },
     },
 };
 
@@ -39,25 +42,25 @@ impl Modal for EditingModal {
         &mut self,
         _: &mut App,
         key_event: crossterm::event::KeyEvent,
-    ) -> eyre::Result<ModalAction> {
+    ) -> eyre::Result<Action> {
         match key_event.code {
             KeyCode::Enter => {
                 if self.input.is_empty() {
-                    Ok(ModalAction::Close)
+                    Ok(Action::Close)
                 } else {
-                    Ok(ModalAction::Switch(Box::new(ConfirmingModal {
+                    Ok(Action::Open(Box::new(ConfirmingModal {
                         action_to_confirm: ConfirmActions::Edit {
                             input: self.input.clone(),
                         },
                     })))
                 }
             }
-            KeyCode::Esc => Ok(ModalAction::Close),
+            KeyCode::Esc => Ok(Action::Close),
 
             KeyCode::Backspace => {
                 _ = self.input.pop();
 
-                Ok(ModalAction::Keep)
+                Ok(Action::None)
             }
 
             _ => {
@@ -65,7 +68,7 @@ impl Modal for EditingModal {
                     self.input.push(char);
                 }
 
-                Ok(ModalAction::Keep)
+                Ok(Action::None)
             }
         }
     }
