@@ -57,14 +57,19 @@ fn get_path(file_type: FileType) -> color_eyre::Result<PathBuf> {
     Ok(json_pathbuf)
 }
 
-impl Storage for JsonStorage {
-    fn load(&self) -> eyre::Result<Vec<Todo>> {
-        let json_pathbuf = get_path(FileType::Real)?;
-        let json_string = fs::read_to_string(json_pathbuf)?;
-        let json: JsonFileData = serde_json::from_str(json_string.as_str())?;
-        let todos = json.todos;
+fn load() -> eyre::Result<JsonFileData> {
+    let json_pathbuf = get_path(FileType::Real)?;
+    let json_string = fs::read_to_string(json_pathbuf)?;
+    let json: JsonFileData = serde_json::from_str(json_string.as_str())?;
 
-        Ok(todos)
+    Ok(json)
+}
+
+impl Storage for JsonStorage {
+    fn get_todos(&self) -> eyre::Result<Vec<Todo>> {
+        let json: JsonFileData = load()?;
+
+        Ok(json.todos)
     }
 
     fn save(&self, todos: &[Todo]) -> eyre::Result<()> {

@@ -9,7 +9,7 @@ pub struct TodoManager {
 
 impl TodoManager {
     pub fn new(storage: Box<dyn Storage>) -> color_eyre::Result<Self> {
-        let todos = storage.load()?;
+        let todos = storage.get_todos()?;
         Ok(Self { todos, storage })
     }
 
