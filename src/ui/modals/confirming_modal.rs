@@ -3,11 +3,11 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint},
-    widgets::Block,
+    widgets::{Block, ListState},
 };
 
 use crate::{
-    app::App,
+    todo_manager::TodoManager,
     ui::{Action, modals::Modal},
 };
 
@@ -35,15 +35,20 @@ impl Modal for ConfirmingModal {
         frame.render_widget(popup, area);
     }
 
-    fn handle_key_event(&mut self, app: &mut App, key_event: KeyEvent) -> eyre::Result<Action> {
+    fn handle_key_event(
+        &mut self,
+        key_event: KeyEvent,
+        list_state: &mut ListState,
+        todo_manager: &mut TodoManager,
+    ) -> eyre::Result<Action> {
         if key_event.code == KeyCode::Char('y') {
             match &mut self.action_to_confirm {
                 ConfirmActions::Delete => {
-                    app.todo_manager.delete_todo(&app.state)?;
+                    todo_manager.delete_todo(list_state)?;
                 }
 
                 ConfirmActions::Edit { input } => {
-                    app.todo_manager.edit_todo(input.as_str(), &app.state)?;
+                    todo_manager.edit_todo(input.as_str(), list_state)?;
                 }
 
                 ConfirmActions::None => {}

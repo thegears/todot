@@ -27,7 +27,11 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                 if app.current_modal.is_some() {
                     if let Some(mut modal) = app.current_modal.take() {
-                        let action = modal.handle_key_event(app, key_event)?;
+                        let action = modal.handle_key_event(
+                            key_event,
+                            &mut app.state,
+                            &mut app.todo_manager,
+                        )?;
 
                         match action {
                             Action::Close => app.current_modal = None,

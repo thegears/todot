@@ -1,12 +1,12 @@
 use color_eyre::eyre::{self, Ok};
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     layout::{Alignment, Constraint},
-    widgets::{Block, Paragraph},
+    widgets::{Block, ListState, Paragraph},
 };
 
 use crate::{
-    app::App,
+    todo_manager::TodoManager,
     ui::{
         Action,
         modals::{
@@ -40,8 +40,9 @@ impl Modal for EditingModal {
 
     fn handle_key_event(
         &mut self,
-        _: &mut App,
-        key_event: crossterm::event::KeyEvent,
+        key_event: KeyEvent,
+        _: &mut ListState,
+        _: &mut TodoManager,
     ) -> eyre::Result<Action> {
         match key_event.code {
             KeyCode::Enter => {

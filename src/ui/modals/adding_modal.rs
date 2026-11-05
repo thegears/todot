@@ -3,11 +3,11 @@ use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint},
-    widgets::{Block, Paragraph, Wrap},
+    widgets::{Block, ListState, Paragraph, Wrap},
 };
 
 use crate::{
-    app::App,
+    todo_manager::TodoManager,
     ui::{Action, modals::Modal},
 };
 
@@ -35,12 +35,17 @@ impl Modal for AddingModal {
         frame.render_widget(popup, area);
     }
 
-    fn handle_key_event(&mut self, app: &mut App, key_event: KeyEvent) -> eyre::Result<Action> {
+    fn handle_key_event(
+        &mut self,
+        key_event: KeyEvent,
+        list_state: &mut ListState,
+        todo_manager: &mut TodoManager,
+    ) -> eyre::Result<Action> {
         match key_event.code {
             KeyCode::Enter => {
                 if !&self.input.is_empty() {
-                    app.todo_manager.create_todo(&self.input)?;
-                    app.state.select_last();
+                    todo_manager.create_todo(&self.input)?;
+                    list_state.select_last();
                     self.input.clear();
                 }
 
