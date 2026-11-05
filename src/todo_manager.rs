@@ -1,7 +1,7 @@
 use ratatui::widgets::ListState;
 
 use crate::{
-    models::{Group, Todo},
+    models::{Group, Todo, TodoGroup},
     storage::Storage,
 };
 
@@ -9,6 +9,12 @@ pub struct TodoManager {
     pub todos: Vec<Todo>,
     pub groups: Vec<Group>,
     storage: Box<dyn Storage>,
+}
+
+#[derive(Debug)]
+pub enum ItemType {
+    Group(usize),
+    Todo(usize),
 }
 
 impl TodoManager {
@@ -22,7 +28,7 @@ impl TodoManager {
         })
     }
 
-    pub fn create_todo(&mut self, content: &str) -> color_eyre::Result<()> {
+    pub fn create_todo(&mut self, content: &str, group: TodoGroup) -> color_eyre::Result<()> {
         let new_todo_id = match self.todos.last() {
             Some(last_todo) => last_todo.id + 1,
             None => 0,
@@ -32,6 +38,7 @@ impl TodoManager {
             content: content.to_string(),
             is_done: false,
             id: new_todo_id,
+            group_id: group,
         });
 
         self.storage.save(&self.todos, &self.groups)?;
@@ -39,9 +46,24 @@ impl TodoManager {
         Ok(())
     }
 
-    pub fn delete_todo(&mut self, list_state: &ListState) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_todo_index) = list_state.selected() {
-            self.todos.remove(selected_todo_index);
+    pub fn delete_thing(&mut self, list_state: &ListState) -> color_eyre::eyre::Result<()> {
+        if let Some(selected_thing_index) = list_state.selected() {
+            let items = self.get_all_items();
+
+            if let Some(selected_thing) = items.get(selected_thing_index) {
+                match selected_thing {
+                    ItemType::Todo(todo_id) => {
+                        self.todos.retain(|t| t.id != *todo_id);
+                    }
+                    ItemType::Group(group_id) => {
+                        self.groups.retain(|g| g.id != *group_id);
+                        self.todos.retain(|t| match t.group_id {
+                            TodoGroup::Some { group_id: id } => id != *group_id,
+                            TodoGroup::None => true,
+                        });
+                    }
+                }
+            }
 
             self.storage.save(&self.todos, &self.groups)?;
         }
@@ -54,10 +76,15 @@ impl TodoManager {
         content: &str,
         list_state: &ListState,
     ) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_todo_index) = list_state.selected()
-            && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
-        {
-            selected_todo.update_content(content);
+        if let Some(selected_thing_index) = list_state.selected() {
+            let items = self.get_all_items();
+
+            if let Some(selected_thing) = items.get(selected_thing_index)
+                && let ItemType::Todo(todo_id) = selected_thing
+                && let Some(todo) = self.todos.iter_mut().find(|t| t.id == *todo_id)
+            {
+                todo.update_content(content);
+            }
 
             self.storage.save(&self.todos, &self.groups)?;
         }
@@ -66,10 +93,15 @@ impl TodoManager {
     }
 
     pub fn toggle_done_todo(&mut self, list_state: &ListState) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_todo_index) = list_state.selected()
-            && let Some(selected_todo) = self.todos.get_mut(selected_todo_index)
-        {
-            selected_todo.toggle_done();
+        if let Some(selected_thing_index) = list_state.selected() {
+            let items = self.get_all_items();
+
+            if let Some(selected_thing) = items.get(selected_thing_index)
+                && let ItemType::Todo(todo_id) = selected_thing
+                && let Some(todo) = self.todos.iter_mut().find(|t| t.id == *todo_id)
+            {
+                todo.toggle_done();
+            }
 
             self.storage.save(&self.todos, &self.groups)?;
         }
@@ -86,11 +118,42 @@ impl TodoManager {
         self.groups.push(Group {
             id: new_group_id,
             name: name.to_string(),
-            is_collapsed: false,
+            is_collapsed: true,
         });
 
         self.storage.save(&self.todos, &self.groups)?;
 
         Ok(())
+    }
+
+    pub fn get_all_items(&self) -> Vec<ItemType> {
+        let mut items: Vec<ItemType> = Vec::new();
+
+        for todo in &self.todos {
+            if todo.group_id == TodoGroup::None {
+                items.push(ItemType::Todo(todo.id));
+            }
+        }
+
+        for group in &self.groups {
+            let is_collapsed = group.is_collapsed;
+            let id = group.id;
+            items.push(ItemType::Group(group.id));
+
+            if !is_collapsed {
+                for todo in &self.todos {
+                    match todo.group_id {
+                        TodoGroup::Some { group_id } => {
+                            if group_id == id {
+                                items.push(ItemType::Todo(todo.id));
+                            }
+                        }
+                        TodoGroup::None => {}
+                    }
+                }
+            }
+        }
+
+        items
     }
 }

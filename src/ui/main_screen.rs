@@ -10,7 +10,7 @@ use textwrap::wrap;
 
 use crate::{
     models::Todo,
-    todo_manager::TodoManager,
+    todo_manager::{ItemType, TodoManager},
     ui::{
         Action,
         modals::{
@@ -54,13 +54,33 @@ impl MainScreen {
             KeyCode::Char('g') => Action::Open(Box::new(CreatingGroupModal {
                 input: String::new(),
             })),
+            KeyCode::Enter => {
+                if let Some(selected_thing_index) = list_state.selected() {
+                    let items = todo_manager.get_all_items();
+
+                    if let Some(selected_thing) = items.get(selected_thing_index)
+                        && let ItemType::Group(group_id) = selected_thing
+                        && let Some(group) = todo_manager.groups.get_mut(*group_id)
+                    {
+                        group.toggle_collapse();
+                    }
+                }
+                Action::None
+            }
             KeyCode::Char('e') => {
-                if let Some(selected_todo_index) = list_state.selected()
-                    && let Some(selected_todo) = todo_manager.todos.get(selected_todo_index)
-                {
-                    Action::Open(Box::new(EditingModal {
-                        input: String::from(&selected_todo.content),
-                    }))
+                if let Some(selected_thing_index) = list_state.selected() {
+                    let items = todo_manager.get_all_items();
+
+                    if let Some(selected_thing) = items.get(selected_thing_index)
+                        && let ItemType::Todo(todo_id) = selected_thing
+                        && let Some(todo) = todo_manager.todos.iter_mut().find(|t| t.id == *todo_id)
+                    {
+                        Action::Open(Box::new(EditingModal {
+                            input: String::from(&todo.content),
+                        }))
+                    } else {
+                        Action::None
+                    }
                 } else {
                     Action::None
                 }
@@ -69,15 +89,9 @@ impl MainScreen {
                 todo_manager.toggle_done_todo(list_state)?;
                 Action::None
             }
-            KeyCode::Char('d') => {
-                if todo_manager.todos.is_empty() {
-                    Action::None
-                } else {
-                    Action::Open(Box::new(ConfirmingModal {
-                        action_to_confirm: ConfirmActions::Delete,
-                    }))
-                }
-            }
+            KeyCode::Char('d') => Action::Open(Box::new(ConfirmingModal {
+                action_to_confirm: ConfirmActions::Delete,
+            })),
             KeyCode::Char('q') => {
                 *should_quit = !(*should_quit);
                 Action::None
@@ -89,7 +103,7 @@ impl MainScreen {
         Ok(action)
     }
 
-    pub fn render(frame: &mut Frame, todos: &[Todo], list_state: &mut ListState) {
+    pub fn render(frame: &mut Frame, todo_manager: &mut TodoManager, list_state: &mut ListState) {
         let outer_block = Block::bordered()
             .title_top(Line::from("Todot").bold().centered())
             .title_bottom(
@@ -98,33 +112,69 @@ impl MainScreen {
             .padding(Padding::symmetric(1, 1));
         let inner_area = outer_block.inner(frame.area());
 
-        let items: Vec<ListItem> = todos
-            .iter()
-            .map(|todo| {
-                let text_prefix: &str;
-                let text_color: Color;
+        let todo_manager_items = todo_manager.get_all_items();
+        let mut list_items: Vec<ListItem> = Vec::new();
 
-                if todo.is_done {
-                    text_prefix = "[✓]";
-                    text_color = Color::DarkGray;
-                } else {
-                    text_prefix = "[ ]";
-                    text_color = Color::White;
+        for item in todo_manager_items {
+            match item {
+                ItemType::Todo(todo_id) => {
+                    if let Some(todo) = todo_manager.todos.iter().find(|t| t.id == todo_id) {
+                        let text_prefix: &str;
+                        let text_color: Color;
+
+                        if todo.is_done {
+                            text_prefix = "[✓]";
+                            text_color = Color::DarkGray;
+                        } else {
+                            text_prefix = "[ ]";
+                            text_color = Color::White;
+                        }
+
+                        let lines: Vec<Line> = wrap(
+                            format!("{} {}", text_prefix, todo.content.as_str()).as_str(),
+                            frame.area().width as usize,
+                        )
+                        .into_iter()
+                        .map(|cow| Line::from(cow.into_owned()))
+                        .collect();
+
+                        list_items.push(
+                            ListItem::new(Text::from(lines)).set_style(Style::new().fg(text_color)),
+                        );
+                    }
                 }
 
-                let lines: Vec<Line> = wrap(
-                    format!("{} {}", text_prefix, todo.content.as_str()).as_str(),
-                    frame.area().width as usize,
-                )
-                .into_iter()
-                .map(|cow| Line::from(cow.into_owned()))
-                .collect();
+                ItemType::Group(group_id) => {
+                    if let Some(group) = todo_manager.groups.get(group_id) {
+                        let text_prefix: &str;
+                        let text_color: Color;
 
-                ListItem::new(Text::from(lines)).set_style(Style::new().fg(text_color))
-            })
-            .collect();
+                        if group.is_collapsed {
+                            text_prefix = "▶"; // Kapalıysa sağ ok
+                            text_color = Color::Yellow;
+                        } else {
+                            text_prefix = "▼"; // Açıksa aşağı ok
+                            text_color = Color::Yellow;
+                        }
 
-        let list = List::new(items)
+                        let lines: Vec<Line> = wrap(
+                            format!("{} 📁 {}", text_prefix, group.name.as_str()).as_str(),
+                            frame.area().width as usize,
+                        )
+                        .into_iter()
+                        .map(|cow| Line::from(cow.into_owned()))
+                        .collect();
+
+                        list_items.push(
+                            ListItem::new(Text::from(lines))
+                                .set_style(Style::new().fg(text_color).bold()),
+                        );
+                    }
+                }
+            }
+        }
+
+        let list = List::new(list_items)
             .highlight_symbol(">")
             .highlight_style(Style::new().bold());
 

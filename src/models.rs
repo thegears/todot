@@ -1,11 +1,18 @@
 use serde::Serialize;
 use serde_derive::Deserialize;
 
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+pub enum TodoGroup {
+    Some { group_id: usize },
+    None,
+}
+
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
 pub struct Todo {
     pub content: String,
     pub is_done: bool,
     pub id: usize,
+    pub group_id: TodoGroup,
 }
 
 impl Todo {

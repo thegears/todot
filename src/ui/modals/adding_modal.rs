@@ -7,7 +7,8 @@ use ratatui::{
 };
 
 use crate::{
-    todo_manager::TodoManager,
+    models::TodoGroup,
+    todo_manager::{ItemType, TodoManager},
     ui::{Action, modals::Modal},
 };
 
@@ -44,7 +45,21 @@ impl Modal for AddingModal {
         match key_event.code {
             KeyCode::Enter => {
                 if !&self.input.is_empty() {
-                    todo_manager.create_todo(&self.input)?;
+                    let mut target_group: TodoGroup = TodoGroup::None;
+
+                    if let Some(selected_thing_index) = list_state.selected() {
+                        let items = todo_manager.get_all_items();
+
+                        if let Some(selected_thing) = items.get(selected_thing_index)
+                            && let ItemType::Group(group_id) = selected_thing
+                        {
+                            target_group = TodoGroup::Some {
+                                group_id: *group_id,
+                            };
+                        }
+                    }
+
+                    todo_manager.create_todo(&self.input, target_group)?;
                     list_state.select_last();
                     self.input.clear();
                 }

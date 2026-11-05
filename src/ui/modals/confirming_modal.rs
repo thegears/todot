@@ -44,7 +44,7 @@ impl Modal for ConfirmingModal {
         if key_event.code == KeyCode::Char('y') {
             match &mut self.action_to_confirm {
                 ConfirmActions::Delete => {
-                    todo_manager.delete_todo(list_state)?;
+                    todo_manager.delete_thing(list_state)?;
                 }
 
                 ConfirmActions::Edit { input } => {

@@ -60,7 +60,7 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
 }
 
 fn render(frame: &mut Frame, app: &mut App) {
-    MainScreen::render(frame, &app.todo_manager.todos, &mut app.state);
+    MainScreen::render(frame, &mut app.todo_manager, &mut app.state);
 
     if let Some(modal) = &mut app.current_modal {
         modal.render(frame);
