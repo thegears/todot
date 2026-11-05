@@ -3,11 +3,15 @@ use std::{env, fs, path::PathBuf};
 use color_eyre::eyre::{self, OptionExt};
 use serde::Deserialize;
 
-use crate::{models::Todo, storage::Storage};
+use crate::{
+    models::{Group, Todo},
+    storage::Storage,
+};
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct JsonFileData {
     todos: Vec<Todo>,
+    groups: Vec<Group>,
 }
 
 pub struct JsonStorage;
@@ -51,7 +55,7 @@ fn get_path(file_type: FileType) -> color_eyre::Result<PathBuf> {
     }
 
     if !json_pathbuf.exists() {
-        fs::write(&json_pathbuf, r#"{"todos":[]}"#)?;
+        fs::write(&json_pathbuf, r#"{"todos":[], "groups":[]}"#)?;
     }
 
     Ok(json_pathbuf)
@@ -72,14 +76,24 @@ impl Storage for JsonStorage {
         Ok(json.todos)
     }
 
-    fn save(&self, todos: &[Todo]) -> eyre::Result<()> {
+    fn get_groups(&self) -> eyre::Result<Vec<Group>> {
+        let json: JsonFileData = load()?;
+
+        Ok(json.groups)
+    }
+
+    fn save(&self, todos: &[Todo], groups: &[Group]) -> eyre::Result<()> {
         let real_json_pathbuf = get_path(FileType::Real)?;
         let tmp_json_pathbuf = get_path(FileType::Tmp)?;
         let bak_json_pathbuf = get_path(FileType::Bak)?;
 
         let todos_string = serde_json::to_string_pretty(todos)?;
+        let groups_string = serde_json::to_string_pretty(groups)?;
 
-        fs::write(&tmp_json_pathbuf, format!(r#"{{"todos": {todos_string}}}"#))?;
+        fs::write(
+            &tmp_json_pathbuf,
+            format!(r#"{{"todos": {todos_string}, "groups": {groups_string}}}"#),
+        )?;
 
         fs::rename(&real_json_pathbuf, bak_json_pathbuf)?;
         fs::rename(tmp_json_pathbuf, real_json_pathbuf)?;
