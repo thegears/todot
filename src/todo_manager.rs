@@ -1,16 +1,25 @@
 use ratatui::widgets::ListState;
 
-use crate::{models::Todo, storage::Storage};
+use crate::{
+    models::{Group, Todo},
+    storage::Storage,
+};
 
 pub struct TodoManager {
     pub todos: Vec<Todo>,
+    pub groups: Vec<Group>,
     storage: Box<dyn Storage>,
 }
 
 impl TodoManager {
     pub fn new(storage: Box<dyn Storage>) -> color_eyre::Result<Self> {
         let todos = storage.get_todos()?;
-        Ok(Self { todos, storage })
+        let groups = storage.get_groups()?;
+        Ok(Self {
+            todos,
+            groups,
+            storage,
+        })
     }
 
     pub fn create_todo(&mut self, content: &str) -> color_eyre::Result<()> {
@@ -25,7 +34,7 @@ impl TodoManager {
             id: new_todo_id,
         });
 
-        self.storage.save(&self.todos)?;
+        self.storage.save(&self.todos, &self.groups)?;
 
         Ok(())
     }
@@ -34,7 +43,7 @@ impl TodoManager {
         if let Some(selected_todo_index) = list_state.selected() {
             self.todos.remove(selected_todo_index);
 
-            self.storage.save(&self.todos)?;
+            self.storage.save(&self.todos, &self.groups)?;
         }
 
         Ok(())
@@ -50,7 +59,7 @@ impl TodoManager {
         {
             selected_todo.update_content(content);
 
-            self.storage.save(&self.todos)?;
+            self.storage.save(&self.todos, &self.groups)?;
         }
 
         Ok(())
@@ -62,7 +71,7 @@ impl TodoManager {
         {
             selected_todo.toggle_done();
 
-            self.storage.save(&self.todos)?;
+            self.storage.save(&self.todos, &self.groups)?;
         }
 
         Ok(())
