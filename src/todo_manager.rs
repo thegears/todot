@@ -76,4 +76,21 @@ impl TodoManager {
 
         Ok(())
     }
+
+    pub fn create_group(&mut self, name: &str) -> color_eyre::Result<()> {
+        let new_group_id = match self.groups.last() {
+            Some(last_group) => last_group.id + 1,
+            None => 0,
+        };
+
+        self.groups.push(Group {
+            id: new_group_id,
+            name: name.to_string(),
+            is_collapsed: false,
+        });
+
+        self.storage.save(&self.todos, &self.groups)?;
+
+        Ok(())
+    }
 }

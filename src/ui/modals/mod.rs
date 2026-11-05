@@ -1,5 +1,6 @@
 pub mod adding_modal;
 pub mod confirming_modal;
+pub mod creating_group_modal;
 pub mod editing_modal;
 
 use color_eyre::eyre;

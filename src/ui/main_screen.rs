@@ -16,6 +16,7 @@ use crate::{
         modals::{
             adding_modal::AddingModal,
             confirming_modal::{ConfirmActions, ConfirmingModal},
+            creating_group_modal::CreatingGroupModal,
             editing_modal::EditingModal,
         },
     },
@@ -48,6 +49,9 @@ impl MainScreen {
                 Action::None
             }
             KeyCode::Char('a') => Action::Open(Box::new(AddingModal {
+                input: String::new(),
+            })),
+            KeyCode::Char('g') => Action::Open(Box::new(CreatingGroupModal {
                 input: String::new(),
             })),
             KeyCode::Char('e') => {
