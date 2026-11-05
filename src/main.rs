@@ -26,7 +26,7 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
         match crossterm::event::read()? {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
                 if app.current_modal.is_some() {
-                    if let Some(mut modal) = app.current_modal.take() {
+                    if let Some(modal) = &mut app.current_modal {
                         let action = modal.handle_key_event(
                             key_event,
                             &mut app.state,
@@ -35,7 +35,7 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
 
                         match action {
                             Action::Close => app.current_modal = None,
-                            Action::None => app.current_modal = Some(modal),
+                            Action::None => {}
                             Action::Open(next_modal) => app.current_modal = Some(next_modal),
                         }
                     }
