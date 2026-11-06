@@ -77,7 +77,11 @@ impl Storage for JsonStorage {
     }
 
     fn get_groups(&self) -> eyre::Result<Vec<Group>> {
-        let json: JsonFileData = load()?;
+        let mut json: JsonFileData = load()?;
+
+        for group in &mut json.groups {
+            group.is_collapsed = true;
+        }
 
         Ok(json.groups)
     }
