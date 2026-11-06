@@ -9,7 +9,7 @@ use ratatui::{
 use textwrap::wrap;
 
 use crate::{
-    models::Todo,
+    models::TodoGroup,
     todo_manager::{ItemType, TodoManager},
     ui::{
         Action,

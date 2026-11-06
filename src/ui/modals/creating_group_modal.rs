@@ -38,7 +38,7 @@ impl Modal for CreatingGroupModal {
     fn handle_key_event(
         &mut self,
         key_event: KeyEvent,
-        list_state: &mut ListState,
+        _: &mut ListState,
         todo_manager: &mut TodoManager,
     ) -> eyre::Result<Action> {
         match key_event.code {
