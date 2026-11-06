@@ -100,64 +100,60 @@ impl MainScreen {
         let mut list_items: Vec<ListItem> = Vec::new();
 
         for item in todo_manager_items {
-            match item {
-                ItemType::Todo(todo_id) => {
-                    if let Some(todo) = todo_manager.todos.iter().find(|t| t.id == todo_id) {
-                        let mut text_prefix = String::new();
-                        let mut text_color: Color = Color::DarkGray;
+            if let ItemType::Todo(todo_id) = item
+                && let Some(todo) = todo_manager.todos.iter().find(|t| t.id == todo_id)
+            {
+                let mut text_prefix = String::new();
+                let mut text_color: Color = Color::DarkGray;
 
-                        if let TodoGroup::Some { group_id: _ } = todo.group_id {
-                            text_prefix.push(' ');
-                        }
-
-                        if todo.is_done {
-                            text_prefix.push_str("[✓]");
-                        } else {
-                            text_prefix.push_str("[]");
-                            text_color = Color::White;
-                        }
-
-                        let lines: Vec<Line> = wrap(
-                            format!("{} {}", text_prefix, todo.content.as_str()).as_str(),
-                            frame.area().width as usize,
-                        )
-                        .into_iter()
-                        .map(|cow| Line::from(cow.into_owned()))
-                        .collect();
-
-                        list_items.push(
-                            ListItem::new(Text::from(lines)).set_style(Style::new().fg(text_color)),
-                        );
-                    }
+                if let TodoGroup::Some { group_id: _ } = todo.group_id {
+                    text_prefix.push(' ');
                 }
 
-                ItemType::Group(group_id) => {
-                    if let Some(group) = todo_manager.groups.get(group_id) {
-                        let text_prefix: &str;
-                        let text_color: Color;
-
-                        if group.is_collapsed {
-                            text_prefix = "▶"; // Kapalıysa sağ ok
-                            text_color = Color::Yellow;
-                        } else {
-                            text_prefix = "▼"; // Açıksa aşağı ok
-                            text_color = Color::Yellow;
-                        }
-
-                        let lines: Vec<Line> = wrap(
-                            format!("{} 📁 {}", text_prefix, group.name.as_str()).as_str(),
-                            frame.area().width as usize,
-                        )
-                        .into_iter()
-                        .map(|cow| Line::from(cow.into_owned()))
-                        .collect();
-
-                        list_items.push(
-                            ListItem::new(Text::from(lines))
-                                .set_style(Style::new().fg(text_color).bold()),
-                        );
-                    }
+                if todo.is_done {
+                    text_prefix.push_str("[✓]");
+                } else {
+                    text_prefix.push_str("[]");
+                    text_color = Color::White;
                 }
+
+                let lines: Vec<Line> = wrap(
+                    format!("{} {}", text_prefix, todo.content.as_str()).as_str(),
+                    frame.area().width as usize,
+                )
+                .into_iter()
+                .map(|cow| Line::from(cow.into_owned()))
+                .collect();
+
+                list_items
+                    .push(ListItem::new(Text::from(lines)).set_style(Style::new().fg(text_color)));
+            }
+
+            if let ItemType::Group(group_id) = item
+                && let Some(group) = todo_manager.groups.iter().find(|g| g.id == group_id)
+            {
+                let text_prefix: &str;
+                let text_color: Color;
+
+                if group.is_collapsed {
+                    text_prefix = "▶"; // Kapalıysa sağ ok
+                    text_color = Color::Yellow;
+                } else {
+                    text_prefix = "▼"; // Açıksa aşağı ok
+                    text_color = Color::Yellow;
+                }
+
+                let lines: Vec<Line> = wrap(
+                    format!("{} 📁 {}", text_prefix, group.name.as_str()).as_str(),
+                    frame.area().width as usize,
+                )
+                .into_iter()
+                .map(|cow| Line::from(cow.into_owned()))
+                .collect();
+
+                list_items.push(
+                    ListItem::new(Text::from(lines)).set_style(Style::new().fg(text_color).bold()),
+                );
             }
         }
 
