@@ -1,9 +1,12 @@
 use serde::Serialize;
 use serde_derive::Deserialize;
 
-#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone, Default)]
 pub enum TodoGroup {
-    Some { group_id: usize },
+    Some {
+        group_id: usize,
+    },
+    #[default]
     None,
 }
 
@@ -12,6 +15,8 @@ pub struct Todo {
     pub content: String,
     pub is_done: bool,
     pub id: usize,
+
+    #[serde(default)]
     pub group_id: TodoGroup,
 }
 

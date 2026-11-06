@@ -10,7 +10,9 @@ use crate::{
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub struct JsonFileData {
+    #[serde(default)]
     todos: Vec<Todo>,
+    #[serde(default)]
     groups: Vec<Group>,
 }
 

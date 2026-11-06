@@ -1,6 +1,6 @@
 [package]
 name = "todot"
-version = "0.1.5"
+version = "0.1.6"
 description = "Yet another TO-DO tui."
 edition = "2024"
 
