@@ -119,14 +119,17 @@ impl MainScreen {
             match item {
                 ItemType::Todo(todo_id) => {
                     if let Some(todo) = todo_manager.todos.iter().find(|t| t.id == todo_id) {
-                        let text_prefix: &str;
-                        let text_color: Color;
+                        let mut text_prefix = String::new();
+                        let mut text_color: Color = Color::DarkGray;
+
+                        if let TodoGroup::Some { group_id: _ } = todo.group_id {
+                            text_prefix.push(' ');
+                        }
 
                         if todo.is_done {
-                            text_prefix = "[✓]";
-                            text_color = Color::DarkGray;
+                            text_prefix.push_str("[✓]");
                         } else {
-                            text_prefix = "[ ]";
+                            text_prefix.push_str("[]");
                             text_color = Color::White;
                         }
 
