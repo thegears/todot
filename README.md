@@ -21,6 +21,8 @@ A project-based, lightweight, responsive, and crash-resilient terminal To-Do app
 | `a`     | Main List | Open **Add Task** modal         |
 | `e`     | Main List | Open **Edit Task** modal        |
 | `d`     | Main List | Open **Delete / Confirm** modal |
+| `g`     | Main List | Open **Create Group** modal     |
+| `Enter` | Main List | Collapse/Expand Group           |
 | `↓`     | Main List | Move down                       |
 | `↑`     | Main List | Move up                         |
 | `Enter` | Modal     | Confirm input / Submit          |
