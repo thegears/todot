@@ -55,32 +55,16 @@ impl MainScreen {
                 input: String::new(),
             })),
             KeyCode::Enter => {
-                if let Some(selected_thing_index) = list_state.selected() {
-                    let items = todo_manager.get_all_items();
-
-                    if let Some(selected_thing) = items.get(selected_thing_index)
-                        && let ItemType::Group(group_id) = selected_thing
-                        && let Some(group) = todo_manager.groups.get_mut(*group_id)
-                    {
-                        group.toggle_collapse();
-                    }
+                if let Some(group) = todo_manager.get_selected_thing_as_group_as_mut(list_state) {
+                    group.toggle_collapse();
                 }
                 Action::None
             }
             KeyCode::Char('e') => {
-                if let Some(selected_thing_index) = list_state.selected() {
-                    let items = todo_manager.get_all_items();
-
-                    if let Some(selected_thing) = items.get(selected_thing_index)
-                        && let ItemType::Todo(todo_id) = selected_thing
-                        && let Some(todo) = todo_manager.todos.iter_mut().find(|t| t.id == *todo_id)
-                    {
-                        Action::Open(Box::new(EditingModal {
-                            input: String::from(&todo.content),
-                        }))
-                    } else {
-                        Action::None
-                    }
+                if let Some(todo) = todo_manager.get_selected_thing_as_todo(list_state) {
+                    Action::Open(Box::new(EditingModal {
+                        input: String::from(&todo.content),
+                    }))
                 } else {
                     Action::None
                 }

@@ -11,7 +11,7 @@ pub struct TodoManager {
     storage: Box<dyn Storage>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum ItemType {
     Group(usize),
     Todo(usize),
@@ -76,15 +76,8 @@ impl TodoManager {
         content: &str,
         list_state: &ListState,
     ) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_thing_index) = list_state.selected() {
-            let items = self.get_all_items();
-
-            if let Some(selected_thing) = items.get(selected_thing_index)
-                && let ItemType::Todo(todo_id) = selected_thing
-                && let Some(todo) = self.todos.iter_mut().find(|t| t.id == *todo_id)
-            {
-                todo.update_content(content);
-            }
+        if let Some(todo) = self.get_selected_thing_as_todo_as_mut(list_state) {
+            todo.update_content(content);
 
             self.storage.save(&self.todos, &self.groups)?;
         }
@@ -93,15 +86,8 @@ impl TodoManager {
     }
 
     pub fn toggle_done_todo(&mut self, list_state: &ListState) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_thing_index) = list_state.selected() {
-            let items = self.get_all_items();
-
-            if let Some(selected_thing) = items.get(selected_thing_index)
-                && let ItemType::Todo(todo_id) = selected_thing
-                && let Some(todo) = self.todos.iter_mut().find(|t| t.id == *todo_id)
-            {
-                todo.toggle_done();
-            }
+        if let Some(todo) = self.get_selected_thing_as_todo_as_mut(list_state) {
+            todo.toggle_done();
 
             self.storage.save(&self.todos, &self.groups)?;
         }
@@ -155,5 +141,61 @@ impl TodoManager {
         }
 
         items
+    }
+
+    fn get_selected_thing_item_type(&self, list_state: &ListState) -> Option<ItemType> {
+        let index = list_state.selected()?;
+        let items = self.get_all_items();
+        items.get(index).copied()
+    }
+
+    pub fn get_selected_thing_as_todo(&self, list_state: &ListState) -> Option<&Todo> {
+        if let Some(selected_thing) = self.get_selected_thing_item_type(list_state)
+            && let ItemType::Todo(todo_id) = selected_thing
+            && let Some(todo) = self.todos.iter().find(|t| t.id == todo_id)
+        {
+            return Some(todo);
+        }
+
+        None
+    }
+
+    pub fn get_selected_thing_as_todo_as_mut(
+        &mut self,
+        list_state: &ListState,
+    ) -> Option<&mut Todo> {
+        if let Some(selected_thing) = self.get_selected_thing_item_type(list_state)
+            && let ItemType::Todo(todo_id) = selected_thing
+            && let Some(todo) = self.todos.iter_mut().find(|t| t.id == todo_id)
+        {
+            return Some(todo);
+        }
+
+        None
+    }
+
+    /* pub fn get_selected_thing_as_group(&self, list_state: &ListState) -> Option<&Group> {
+        if let Some(selected_thing) = self.get_selected_thing_item_type(list_state)
+            && let ItemType::Group(group_id) = selected_thing
+            && let Some(group) = self.groups.iter().find(|g| g.id == group_id)
+        {
+            return Some(group);
+        }
+
+        None
+    } */
+
+    pub fn get_selected_thing_as_group_as_mut(
+        &mut self,
+        list_state: &ListState,
+    ) -> Option<&mut Group> {
+        if let Some(selected_thing) = self.get_selected_thing_item_type(list_state)
+            && let ItemType::Group(group_id) = selected_thing
+            && let Some(group) = self.groups.iter_mut().find(|g| g.id == group_id)
+        {
+            return Some(group);
+        }
+
+        None
     }
 }
