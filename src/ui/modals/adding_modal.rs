@@ -88,3 +88,11 @@ impl Modal for AddingModal {
         }
     }
 }
+
+impl AddingModal {
+    pub fn new() -> Self {
+        Self {
+            input: String::new(),
+        }
+    }
+}

@@ -48,12 +48,8 @@ impl MainScreen {
                 list_state.select_previous();
                 Action::None
             }
-            KeyCode::Char('a') => Action::Open(Box::new(AddingModal {
-                input: String::new(),
-            })),
-            KeyCode::Char('g') => Action::Open(Box::new(CreatingGroupModal {
-                input: String::new(),
-            })),
+            KeyCode::Char('a') => Action::Open(AddingModal::new().into()),
+            KeyCode::Char('g') => Action::Open(CreatingGroupModal::new().into()),
             KeyCode::Enter => {
                 if let Some(group) = todo_manager.get_selected_thing_as_group_as_mut(list_state) {
                     group.toggle_collapse();
@@ -62,9 +58,7 @@ impl MainScreen {
             }
             KeyCode::Char('e') => {
                 if let Some(todo) = todo_manager.get_selected_thing_as_todo(list_state) {
-                    Action::Open(Box::new(EditingModal {
-                        input: String::from(&todo.content),
-                    }))
+                    Action::Open(EditingModal::new(todo.content.clone()).into())
                 } else {
                     Action::None
                 }
@@ -73,9 +67,7 @@ impl MainScreen {
                 todo_manager.toggle_done_todo(list_state)?;
                 Action::None
             }
-            KeyCode::Char('d') => Action::Open(Box::new(ConfirmingModal {
-                action_to_confirm: ConfirmActions::Delete,
-            })),
+            KeyCode::Char('d') => Action::Open(ConfirmingModal::new(ConfirmActions::Delete).into()),
             KeyCode::Char('q') => {
                 *should_quit = !(*should_quit);
                 Action::None

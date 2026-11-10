@@ -72,3 +72,11 @@ impl Modal for CreatingGroupModal {
         }
     }
 }
+
+impl CreatingGroupModal {
+    pub fn new() -> Self {
+        Self {
+            input: String::new(),
+        }
+    }
+}

@@ -4,6 +4,8 @@ mod storage;
 mod todo_manager;
 mod ui;
 
+use crate::ui::modals::Modal;
+
 use crate::{
     app::App,
     ui::{Action, main_screen::MainScreen},
@@ -25,19 +27,14 @@ fn tui(terminal: &mut DefaultTerminal, app: &mut App) -> color_eyre::Result<()> 
         terminal.draw(|frame| render(frame, app))?;
         match crossterm::event::read()? {
             Event::Key(key_event) if key_event.kind == KeyEventKind::Press => {
-                if app.current_modal.is_some() {
-                    if let Some(modal) = &mut app.current_modal {
-                        let action = modal.handle_key_event(
-                            key_event,
-                            &mut app.state,
-                            &mut app.todo_manager,
-                        )?;
+                if let Some(modal) = &mut app.current_modal {
+                    let action =
+                        modal.handle_key_event(key_event, &mut app.state, &mut app.todo_manager)?;
 
-                        match action {
-                            Action::Close => app.current_modal = None,
-                            Action::None => {}
-                            Action::Open(next_modal) => app.current_modal = Some(next_modal),
-                        }
+                    match action {
+                        Action::Close => app.current_modal = None,
+                        Action::None => {}
+                        Action::Open(next_modal) => app.current_modal = Some(next_modal),
                     }
                 } else {
                     let action = MainScreen::handle_key_event(

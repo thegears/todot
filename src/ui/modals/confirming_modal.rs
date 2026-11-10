@@ -64,3 +64,9 @@ impl Modal for ConfirmingModal {
         }
     }
 }
+
+impl ConfirmingModal {
+    pub fn new(action_to_confirm: ConfirmActions) -> Self {
+        Self { action_to_confirm }
+    }
+}

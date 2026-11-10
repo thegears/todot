@@ -49,11 +49,12 @@ impl Modal for EditingModal {
                 if self.input.is_empty() {
                     Ok(Action::Close)
                 } else {
-                    Ok(Action::Open(Box::new(ConfirmingModal {
-                        action_to_confirm: ConfirmActions::Edit {
-                            input: self.input.clone(),
-                        },
-                    })))
+                    Ok(Action::Open(
+                        ConfirmingModal::new(ConfirmActions::Edit {
+                            input: std::mem::take(&mut self.input),
+                        })
+                        .into(),
+                    ))
                 }
             }
             KeyCode::Esc => Ok(Action::Close),
@@ -72,5 +73,11 @@ impl Modal for EditingModal {
                 Ok(Action::None)
             }
         }
+    }
+}
+
+impl EditingModal {
+    pub fn new(content: String) -> Self {
+        Self { input: content }
     }
 }

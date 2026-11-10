@@ -1,14 +1,14 @@
 use crate::storage::JsonStorage;
 
 use crate::todo_manager::TodoManager;
-use crate::ui::modals::Modal;
+use crate::ui::modals::CurrentModal;
 
 use ratatui::widgets::ListState;
 
 pub struct App {
     pub todo_manager: TodoManager,
     pub state: ListState,
-    pub current_modal: Option<Box<dyn Modal>>,
+    pub current_modal: Option<CurrentModal>,
     pub should_quit: bool,
 }
 
@@ -20,7 +20,7 @@ impl App {
         Ok(Self {
             todo_manager,
             state: ListState::default().with_selected(Some(0)),
-            current_modal: Option::None,
+            current_modal: None,
             should_quit: false,
         })
     }
