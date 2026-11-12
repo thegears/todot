@@ -47,21 +47,17 @@ impl TodoManager {
     }
 
     pub fn delete_thing(&mut self, list_state: &ListState) -> color_eyre::eyre::Result<()> {
-        if let Some(selected_thing_index) = list_state.selected() {
-            let items = self.get_all_items();
-
-            if let Some(selected_thing) = items.get(selected_thing_index) {
-                match selected_thing {
-                    ItemType::Todo(todo_id) => {
-                        self.todos.retain(|t| t.id != *todo_id);
-                    }
-                    ItemType::Group(group_id) => {
-                        self.groups.retain(|g| g.id != *group_id);
-                        self.todos.retain(|t| match t.group_id {
-                            TodoGroup::Some { group_id: id } => id != *group_id,
-                            TodoGroup::None => true,
-                        });
-                    }
+        if let Some(selected_thing) = self.get_selected_thing_item_type(list_state) {
+            match selected_thing {
+                ItemType::Todo(todo_id) => {
+                    self.todos.retain(|t| t.id != todo_id);
+                }
+                ItemType::Group(group_id) => {
+                    self.groups.retain(|g| g.id != group_id);
+                    self.todos.retain(|t| match t.group_id {
+                        TodoGroup::Some { group_id: id } => id != group_id,
+                        TodoGroup::None => true,
+                    });
                 }
             }
 
