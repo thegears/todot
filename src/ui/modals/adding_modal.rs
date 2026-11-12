@@ -60,7 +60,6 @@ impl Modal for AddingModal {
                     }
 
                     todo_manager.create_todo(&self.input, target_group)?;
-                    list_state.select_last();
                     self.input.clear();
                 }
 
