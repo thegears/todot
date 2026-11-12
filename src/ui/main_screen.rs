@@ -80,11 +80,20 @@ impl MainScreen {
     }
 
     pub fn render(frame: &mut Frame, todo_manager: &mut TodoManager, list_state: &mut ListState) {
+        let is_selected_thing_todo = todo_manager
+            .get_selected_thing_as_todo(list_state)
+            .is_some();
+
+        let bottom_text = Line::from(if is_selected_thing_todo {
+            "[a] Add [e] Edit [d] Delete [t] Toggle Done [q] Quit"
+        } else {
+            "[a] Add [d] Delete [Enter] Toggle Collapse [q] Quit"
+        })
+        .centered();
+
         let outer_block = Block::bordered()
             .title_top(Line::from("Todot").bold().centered())
-            .title_bottom(
-                Line::from("[a] Add [e] Edit [d] Delete [t] Toggle Done [q] Quit").centered(),
-            )
+            .title_bottom(bottom_text)
             .padding(Padding::symmetric(1, 1));
         let inner_area = outer_block.inner(frame.area());
 
